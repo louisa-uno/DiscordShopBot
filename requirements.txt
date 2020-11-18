@@ -1,0 +1,3 @@
+###### Requirements ######
+discord.py
+mysql-connector
