@@ -22,6 +22,8 @@ You need to own the "Support" role to use the bot.
 
 =additem: Create a item
 
+React with ✏️ to a item to edit it.
+
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 

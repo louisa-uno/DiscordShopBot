@@ -1,6 +1,6 @@
 import discord
 import mysql.connector
-import random
+import time
 from config import mysql_config
 from config import discord_config
 
@@ -40,8 +40,9 @@ async def on_raw_reaction_add(raw_reaction):
                         print(f"{user}: ❌ Removed from cart")
                         cart(database_user, -1, reaction)
                         await cart_message(database_user, reaction, user)
-                    await reaction.remove(user = user)
-        if is_cart(message):
+                elif reaction.emoji == "✏️":
+                    await edit_item(reaction, user)
+        elif is_cart(message):
             for reaction in message.reactions:
                 if reaction.count >= 2:
                     if reaction.emoji == "💰":
@@ -52,12 +53,72 @@ async def on_raw_reaction_add(raw_reaction):
                         print(f"{user}: 🗑️  Emptied cart")
                         database_user = f"{user}".replace("#","_")
                         await delete_cart(reaction, database_user, user)
-        if is_order(message):
+        elif is_order(message):
             for reaction in message.reactions:
                 if reaction.count >= 2:
                     if reaction.emoji == "🗑️":
                         print(f"{user}: 🗑️  Cancelled checkout ")
                         await message.channel.delete()
+        for reaction in message.reactions:
+            await reaction.remove(user = user)
+
+async def edit_item(reaction, user):
+    message = reaction.message
+    GUILD_ID = discord_config["guild_id"]
+    guild = await client.fetch_guild(GUILD_ID)
+    guild_member = await guild.fetch_member(user.id)
+
+    role_names = [role.name for role in guild_member.roles]
+    if not "Support" in role_names:
+        return
+
+    item_name = reaction.message.embeds[0].title
+
+    print(item_name)
+
+    edit_item_channel = await guild.create_text_channel(f"edit-{item_name}")
+
+    await edit_item_channel.set_permissions(guild.default_role, read_messages=False, send_messages=False)
+    await edit_item_channel.set_permissions(user, read_messages=True, send_messages=True)
+    await edit_item_channel.set_permissions(discord.utils.get(guild.roles, name="Support"), read_messages=True, send_messages=True)
+
+    def check(m):
+        return m.channel == edit_item_channel and m.author == guild_member
+
+
+    embed = discord.Embed(title = f"What should be the new stock for {item_name}?" , description = "0 means out of stock \n-1 means unlimited" , color = discord.Colour.from_rgb(255, 0, 0))
+    await edit_item_channel.send(embed=embed)
+    item_quantity_message = await client.wait_for('message', check=check)
+    item_quantity_database = item_quantity_message.content
+    if str(item_quantity_database) == "-1":
+        item_quantity = "Unlimited"
+    else: 
+        item_quantity = item_quantity_database
+
+
+    cart_cursor.execute(f"SELECT * FROM items WHERE name = '{item_name}'")
+    productinfo = cart_cursor.fetchall()[0]
+    item_price = productinfo[4]
+    item_description = productinfo[2]
+    item_image_url = productinfo[3]
+
+    embed.add_field(name = f"Price: {item_price}€", value = item_description, inline = True)
+    embed.add_field(name = f"Quantity: {item_quantity}", value = ".", inline = True)
+    if str(item_image_url) != ".":
+        embed.set_image(url = item_image_url)
+
+    await reaction.message.edit(embed=embed)
+
+
+    cart_cursor.execute(f"UPDATE items SET quantity = '{item_quantity}' WHERE name = '{item_name}'")
+    cart_database.commit()
+
+    embed = discord.Embed(title = f"The new stock is {item_quantity}" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+    await edit_item_channel.send(embed=embed)
+    
+    time.sleep(10)
+
+    await edit_item_channel.delete()
 
 async def cart_ticket(database_user, reaction, user):
     print(f"{user}") 
@@ -84,8 +145,6 @@ async def cart_ticket(database_user, reaction, user):
         embed.add_field(name = "Count", value = f"{productquantity}", inline = True)
         embed.add_field(name = "Price", value = f"{productprices}", inline = True)
         embed.add_field(name = f"Total: {round(total, 2)}€ | With PayPal fees: {round(paypaltotal, 2)}€", value = f"(Maybe this message won't display well on mobile devices)", inline = True)
-        
-
 
         await delete_dm(user)
 
@@ -183,201 +242,264 @@ async def delete_messages(channel):
         deleted = await channel.purge(limit=10000, check=None)
         await channel.send('Deleted {} message(s)'.format(len(deleted)))
 
+async def help_command(message):
+    embed = discord.Embed(title = "Command Help" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+                
+    embed.add_field(name = f"Command Help", value = "Usage: =help", inline = True)
+    embed.add_field(name = f"Delete all messages in a channel", value = "Usage: =clear", inline = True)
+    embed.add_field(name = f"Create a shop category", value = "Usage: =addcategory", inline = True)
+    embed.add_field(name = f"DISABLED: Create a shop channel", value = "Usage: =addchannel", inline = True)
+    embed.add_field(name = f"Create a item", value = "Usage: =additem", inline = True)
+    embed.add_field(name = f"DISABLED: Recreate all items", value = "Usage: =add", inline = True)
+    embed.add_field(name = f"React with a ✏️ to a item to edit it.", value = "Usage: Reaction ✏️", inline = True)
+    
+    await message.channel.send(embed=embed)     
+
+async def setstock_command(message):
+    channel = message.channel
+    author = message.author
+    def check(m):
+        return m.channel == channel and m.author == author
+
+
+    while True:
+        embed = discord.Embed(title = "For which item should the stock be changed?" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+        await message.channel.send(embed=embed)
+        item_name_message = await client.wait_for('message', check=check)
+        item_name = item_name_message.content
+        
+        cart_cursor.execute(f"SELECT EXISTS (SELECT * FROM items WHERE name = '{item_name}')")
+        valid_item = cart_cursor.fetchall()
+        if valid_item == [(1,)]:
+            break
+
+    embed = discord.Embed(title = "What should be the new stock?" , description = "0 means out of stock \n-1 means unlimited" , color = discord.Colour.from_rgb(255, 0, 0))
+    await message.channel.send(embed=embed)
+    item_quantity_message = await client.wait_for('message', check=check)
+    item_quantity_database = item_quantity_message.content
+    if str(item_quantity_database) == "-1":
+        item_quantity = "Unlimited"
+    else: 
+        item_quantity = item_quantity_database
+    
+    while True:
+        embed = discord.Embed(title = "What is the category of the item?" , description = "Please mention the category channel with a # before the channel name." , color = discord.Colour.from_rgb(255, 0, 0))
+        await message.channel.send(embed=embed)
+        item_category_message = await client.wait_for('message', check=check)
+        mentioned_item_category = item_category_message.raw_channel_mentions
+        mentioned_item_category_id = mentioned_item_category[0]
+        item_category_channel = await client.fetch_channel(mentioned_item_category_id)
+        
+        def valid_item_message(m):
+            return m.author.id == client.user.id
+
+
+        item_category_channel_messages = await item_category_channel.history()
+        print(item_category_message)
+        
+        # if cart_message != None:
+        #     await cart_message.edit(embed=embed)
+        #     break
+        
+    
+    cart_cursor.execute(f"UPDATE items SET quantity = '{item_quantity}' WHERE name = '{item_name}'")
+    cart_database.commit()
+
+    embed = discord.Embed(title = f"The new stock is {item_quantity}" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+    await message.channel.send(embed=embed)
+
+
+
+
+
+
+
+
+
+
+async def addcategory_command(message):
+    GUILD_ID = discord_config["guild_id"]
+    guild = await client.fetch_guild(GUILD_ID)
+    channel = message.channel
+    author = message.author
+
+    categories = message.guild.categories
+    print(categories)
+    for category in categories:
+        print(category)
+
+    embed = discord.Embed(title = "What should be the category name?" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+
+    await message.channel.send(embed=embed)
+
+                
+
+
+    def check(m):
+        return m.channel == channel and m.author == author
+    category = await client.wait_for('message', check=check)
+    category_name = category.content
+    print(category_name)
+
+    embed = discord.Embed(title = f"Created the category {category_name}" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+    await message.channel.send(embed=embed)
+    await guild.create_category(category_name)
+
+async def addchannel_command(message):
+    GUILD_ID = discord_config["guild_id"]
+    guild = await client.fetch_guild(GUILD_ID)
+    channel = message.channel
+    author = message.author
+
+    categories = message.guild.categories
+    print(categories)
+    for category in categories:
+        print(category)
+
+    embed = discord.Embed(title = "What should be the channel name?" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+
+    await message.channel.send(embed=embed)
+
+    def check(m):
+        return m.channel == channel and m.author == author
+    category = await client.wait_for('message', check=check)
+    category_name = category.content
+    print(category_name)
+
+    embed = discord.Embed(title = f"Created the category {category_name}" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+    await message.channel.send(embed=embed)
+    await guild.create_category(category_name)
+
+async def additem_command(message):
+    GUILD_ID = discord_config["guild_id"]
+    guild = await client.fetch_guild(GUILD_ID)
+    channel = message.channel
+    author = message.author
+
+    def check(m):
+        return m.channel == channel and m.author == author
+        
+
+
+
+    # categories = message.guild.categories
+    # print(categories)
+    # for category in categories:
+    #     print(category)
+
+    embed = discord.Embed(title = "What should be the item name?" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+    await message.channel.send(embed=embed)
+    item_name_message = await client.wait_for('message', check=check)
+    item_name = item_name_message.content
+                    
+    embed = discord.Embed(title = "What should be the item description?" , description = "Enter . for no description." , color = discord.Colour.from_rgb(255, 0, 0))
+    await message.channel.send(embed=embed)
+    item_description_message = await client.wait_for('message', check=check)
+    item_description = item_description_message.content
+
+    embed = discord.Embed(title = "What should be the item image?" , description = "Please enter public URL to the image \nValid Files are png, jpg or gif. \n Enter a . for no image." , color = discord.Colour.from_rgb(255, 0, 0))
+    await message.channel.send(embed=embed)
+    item_image_message = await client.wait_for('message', check=check)
+    item_image_url = item_image_message.content
+
+    embed = discord.Embed(title = "What should be the item price?" , description = "Please enter the price like this: 0.1" , color = discord.Colour.from_rgb(255, 0, 0))
+    await message.channel.send(embed=embed)
+    item_price_message = await client.wait_for('message', check=check)
+    item_price = item_price_message.content
+
+    embed = discord.Embed(title = "What should be the item quantity?" , description = "0 means out of stock \n-1 means unlimited" , color = discord.Colour.from_rgb(255, 0, 0))
+    await message.channel.send(embed=embed)
+    item_quantity_message = await client.wait_for('message', check=check)
+    item_quantity_database = item_quantity_message.content
+    if str(item_quantity_database) == "-1":
+        item_quantity = "Unlimited"
+    else: 
+        item_quantity = item_quantity_database
+
+    embed = discord.Embed(title = "What is the category for your item?" , description = "Please mention the category channel with a # before the channel name." , color = discord.Colour.from_rgb(255, 0, 0))
+    await message.channel.send(embed=embed)
+    item_category_message = await client.wait_for('message', check=check)
+    mentioned_item_category = item_category_message.raw_channel_mentions
+    mentioned_item_category_id = mentioned_item_category[0]
+    item_category_channel = await client.fetch_channel(mentioned_item_category_id)
+                    
+    embed = discord.Embed(title = item_name , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+                    
+    embed.add_field(name = f"Price: {item_price}€", value = item_description, inline = True)
+    embed.add_field(name = f"Quantity: {item_quantity}", value = ".", inline = True)
+    if str(item_image_url) != ".":
+        embed.set_image(url = item_image_url)
+
+    await item_category_channel.send(embed=embed)
+
+    cart_cursor.execute(f"INSERT INTO `items` (`name`, `description`, `url`, `price`, `quantity`, `channel_id`) VALUES ('{item_name}', '{item_description}','{item_image_url}', '{item_price}', '{item_quantity_database}', '{mentioned_item_category_id}')")
+    cart_database.commit()
+
+async def add_command(message):
+    member = message.author
+    cart_cursor.execute(f"select * from products WHERE channel = '{message.channel}' and enabled = 'true'")
+    products = cart_cursor.fetchall()
+    print(f"{member} created {cart_cursor.rowcount} products.")
+                
+    if products != []:
+        await message.channel.purge(limit=100, check=None)
+
+    description = ""
+
+    for product in products:
+        title = product[3]
+        price = product[4]
+        quantity = product[6]
+        url = product[7]
+        description = product[8]
+        if str(description) == "None":
+            description = "."
+                
+        embed = discord.Embed(title = title , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+                
+        embed.add_field(name = f"Price: {price}", value = description, inline = True)
+        embed.add_field(name = f"Quantity: {quantity}", value = ".", inline = True)
+        if str(url) != "None":
+            embed.set_image(url = url)
+
+        await message.channel.send(embed=embed)
+
+async def add_reactions(message):
+    cart_cursor.execute(f"SELECT EXISTS (SELECT * FROM items WHERE name = '{message.embeds[0].title}')")
+    is_sell_message = cart_cursor.fetchall()
+    if is_sell_message == [(1,)]:
+        await message.add_reaction('🛒')
+        await message.add_reaction('❌')
+    elif is_cart(message):
+        await message.add_reaction('💰')
+        await message.add_reaction('🗑️')
+    elif is_order(message):
+        await message.add_reaction('🗑️')
+
+
+
 @client.event
 async def on_message(message):
     if message.author == client.user:
-        cart_cursor.execute(f"SELECT EXISTS (SELECT * FROM items WHERE name = '{message.embeds[0].title}')")
-        is_sell_message = cart_cursor.fetchall()
-        if is_sell_message == [(1,)]:
-            await message.add_reaction('🛒')
-            await message.add_reaction('❌')
-        if is_cart(message):
-            await message.add_reaction('💰')
-            await message.add_reaction('🗑️')
-        if is_order(message):
-            await message.add_reaction('🗑️')
+        await add_reactions(message)
 
     if message.author != client.user:
         role_names = [role.name for role in message.author.roles]
         if "Support" in role_names:
             if message.content.startswith("=help"):
-                embed = discord.Embed(title = "Command Help" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
-                
-                embed.add_field(name = f"Command Help", value = "Usage: =help", inline = True)
-                embed.add_field(name = f"Delete all messages in a channel", value = "Usage: =clear", inline = True)
-                embed.add_field(name = f"Create a shop category", value = "Usage: =addcategory", inline = True)
-                embed.add_field(name = f"DISABLED: Create a shop channel", value = "Usage: =addchannel", inline = True)
-                embed.add_field(name = f"Create a item", value = "Usage: =additem", inline = True)
-                embed.add_field(name = f"DISABLED: Recreate all items", value = "Usage: =add", inline = True)
-                await message.channel.send(embed=embed)                
-                
-
-            if message.content.startswith("=clear"):
+                await help_command(message)
+            elif message.content.startswith("=clear"):
                 await delete_messages(message.channel)
-
+            elif message.content.startswith("=setstock"):
+                await setstock_command(message)
             elif message.content.startswith("=addcategory"):
-                GUILD_ID = discord_config["guild_id"]
-                guild = await client.fetch_guild(GUILD_ID)
-                channel = message.channel
-                author = message.author
-
-                categories = message.guild.categories
-                print(categories)
-                for category in categories:
-                    print(category)
-
-                embed = discord.Embed(title = "What should be the category name?" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
-
-                await message.channel.send(embed=embed)
-
-                
-
-
-                def check(m):
-                    return m.channel == channel and m.author == author
-                category = await client.wait_for('message', check=check)
-                category_name = category.content
-                print(category_name)
-
-                embed = discord.Embed(title = f"Created the category {category_name}" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
-                await message.channel.send(embed=embed)
-                await guild.create_category(category_name)
-
+                await addcategory_command(message)
             elif message.content.startswith("=addchannel"):
-                GUILD_ID = discord_config["guild_id"]
-                guild = await client.fetch_guild(GUILD_ID)
-                channel = message.channel
-                author = message.author
-
-                categories = message.guild.categories
-                print(categories)
-                for category in categories:
-                    print(category)
-
-                embed = discord.Embed(title = "What should be the channel name?" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
-
-                await message.channel.send(embed=embed)
-
-                
-
-
-                def check(m):
-                    return m.channel == channel and m.author == author
-                category = await client.wait_for('message', check=check)
-                category_name = category.content
-                print(category_name)
-
-                embed = discord.Embed(title = f"Created the category {category_name}" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
-                await message.channel.send(embed=embed)
-                await guild.create_category(category_name)
-
-
-
-
-
-
-
+                await addchannel_command(message)
             elif message.content.startswith("=additem"):
-                GUILD_ID = discord_config["guild_id"]
-                guild = await client.fetch_guild(GUILD_ID)
-                channel = message.channel
-                author = message.author
-
-
-                def check(m):
-                    return m.channel == channel and m.author == author
-
-                # categories = message.guild.categories
-                # print(categories)
-                # for category in categories:
-                #     print(category)
-
-                embed = discord.Embed(title = "What should be the item name?" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
-                await message.channel.send(embed=embed)
-                item_name_message = await client.wait_for('message', check=check)
-                item_name = item_name_message.content
-                
-                embed = discord.Embed(title = "What should be the item description?" , description = "Enter . for no description." , color = discord.Colour.from_rgb(255, 0, 0))
-                await message.channel.send(embed=embed)
-                item_description_message = await client.wait_for('message', check=check)
-                item_description = item_description_message.content
-
-                embed = discord.Embed(title = "What should be the item image?" , description = "Please enter public URL to the image \nValid Files are png, jpg or gif. \n Enter a . for no image." , color = discord.Colour.from_rgb(255, 0, 0))
-                await message.channel.send(embed=embed)
-                item_image_message = await client.wait_for('message', check=check)
-                item_image_url = item_image_message.content
-
-                embed = discord.Embed(title = "What should be the item price?" , description = "Please enter the price like this: 0.1" , color = discord.Colour.from_rgb(255, 0, 0))
-                await message.channel.send(embed=embed)
-                item_price_message = await client.wait_for('message', check=check)
-                item_price = item_price_message.content
-
-                embed = discord.Embed(title = "What should be the item quantity?" , description = "0 means out of stock \n-1 means unlimited" , color = discord.Colour.from_rgb(255, 0, 0))
-                await message.channel.send(embed=embed)
-                item_quantity_message = await client.wait_for('message', check=check)
-                item_quantity_database = item_quantity_message.content
-                if str(item_quantity_database) == "-1":
-                    item_quantity = "Unlimited"
-                else: 
-                    item_quantity = item_quantity_database
-
-                embed = discord.Embed(title = "What is the category for your item?" , description = "Please mention the category channel with a # before the channel name." , color = discord.Colour.from_rgb(255, 0, 0))
-                await message.channel.send(embed=embed)
-                item_category_message = await client.wait_for('message', check=check)
-                mentioned_item_category = item_category_message.raw_channel_mentions
-                mentioned_item_category_id = mentioned_item_category[0]
-                item_category_channel = await client.fetch_channel(mentioned_item_category_id)
-
-
-
-
-                
-                embed = discord.Embed(title = item_name , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
-                
-                embed.add_field(name = f"Price: {item_price}€", value = item_description, inline = True)
-                embed.add_field(name = f"Quantity: {item_quantity}", value = ".", inline = True)
-                if str(item_image_url) != ".":
-                    embed.set_image(url = item_image_url)
-                
-
-
-                await item_category_channel.send(embed=embed)
-
-                cart_cursor.execute(f"INSERT INTO `items` (`name`, `description`, `url`, `price`, `quantity`, `channel_id`) VALUES ('{item_name}', '{item_description}','{item_image_url}', '{item_price}', '{item_quantity_database}', '{mentioned_item_category_id}')")
-                cart_database.commit()
-
-
-
-
-
-
-
+                await additem_command(message)
             elif message.content.startswith("=add"):
-                member = message.author
-                cart_cursor.execute(f"select * from products WHERE channel = '{message.channel}' and enabled = 'true'")
-                products = cart_cursor.fetchall()
-                print(f"{member} created {cart_cursor.rowcount} products.")
+                await add_command(message)
                 
-                if products != []:
-                    await message.channel.purge(limit=100, check=None)
-
-                description = ""
-
-                for product in products:
-                    title = product[3]
-                    price = product[4]
-                    quantity = product[6]
-                    url = product[7]
-                    description = product[8]
-                    if str(description) == "None":
-                        description = "."
                 
-                    embed = discord.Embed(title = title , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
-                
-                    embed.add_field(name = f"Price: {price}", value = description, inline = True)
-                    embed.add_field(name = f"Quantity: {quantity}", value = ".", inline = True)
-                    if str(url) != "None":
-                        embed.set_image(url = url)
-
-                    await message.channel.send(embed=embed)
 client.run(discord_config["bot_token"])
