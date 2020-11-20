@@ -7,14 +7,20 @@
 ## Installation
 
 - #### 1. Install the requirements.txt
-```bash
+```python
 pip install -r requirements.txt
 ```
-- #### 2. Configure the config.py
-  - ##### 2.1 Fill in the login credentials of your mysql database
-  - ##### 2.2 Fill in the bot token of your discord bot
-  - ##### 2.3 Fill in the guild id of your guild
-  - ##### 2.4 Customize messages [optional]
+- #### 2. Fill out the config.json
+##### 2.1 Fill the essentials out and test the connection using the included tool
+```python
+python configure.py
+```
+##### 2.2 [Optional] Set custom messages using the config.json
+- #### 3. Start the discord-shop
+```python
+python discord-shop.py
+```
+
 
 ## Usage
 #### You must have the "Support" role on your server in order to use the bot.
