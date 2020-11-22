@@ -1,3 +1,5 @@
 ###### Requirements ######
 discord.py
 mysql-connector-python
+requests
+validators
