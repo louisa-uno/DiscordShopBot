@@ -2,7 +2,7 @@ import discord
 import mysql.connector
 import time
 import json
-import requests 
+import requests
 import validators
 
 with open("config.json") as f:
@@ -16,7 +16,7 @@ cart_database = test_mysql = mysql.connector.connect(user=config_mysql["user"],p
 
 print(f"MySQL: Logged in as {cart_database.user}")
 cart_cursor = cart_database.cursor(buffered=False)
-cart_cursor.execute(f"CREATE TABLE IF NOT EXISTS `items` (`id` int NOT NULL AUTO_INCREMENT PRIMARY KEY, `name` varchar(255) DEFAULT NULL, `description` varchar(255) DEFAULT NULL, `url` varchar(255) DEFAULT NULL, `price` varchar(255) DEFAULT NULL, `quantity` varchar(255) DEFAULT NULL, `channel_id` varchar(255) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4")
+cart_cursor.execute(f"CREATE TABLE IF NOT EXISTS `items` (`id` int NOT NULL AUTO_INCREMENT PRIMARY KEY, `name` varchar(256) DEFAULT NULL, `description` varchar(1024) DEFAULT NULL, `url` varchar(1024) DEFAULT NULL, `price` varchar(255) DEFAULT NULL, `quantity` varchar(255) DEFAULT NULL, `channel_id` varchar(255) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4")
 cart_database.commit()
 
 @client.event
@@ -40,7 +40,7 @@ async def on_raw_reaction_add(raw_reaction):
                 if reaction.count >= 2:
                     database_user = f"{user}".replace("#","_")
                     if reaction.emoji == "🛒":
-                        print(f"{user}: 🛒 Added to cart  ")
+                        print(f"{user}: 🛒 Added to cart")
                         cart(database_user, 1, reaction)
                         await cart_message(database_user, reaction, user)
                     elif reaction.emoji == "❌":
@@ -53,7 +53,7 @@ async def on_raw_reaction_add(raw_reaction):
             for reaction in message.reactions:
                 if reaction.count >= 2:
                     if reaction.emoji == "💰":
-                        print(f"{user}: 💰  Gone to checkout  ")
+                        print(f"{user}: 💰  Gone to checkout")
                         database_user = f"{user}".replace("#","_")
                         await cart_ticket(database_user, reaction, user)
                     elif reaction.emoji == "🗑️":
@@ -64,8 +64,8 @@ async def on_raw_reaction_add(raw_reaction):
             for reaction in message.reactions:
                 if reaction.count >= 2:
                     if reaction.emoji == "🗑️":
-                        print(f"{user}: 🗑️  Cancelled checkout ")
-                        await message.channel.delete()   
+                        print(f"{user}: 🗑️  Cancelled checkout")
+                        await message.channel.delete()
 
 async def edit_item(reaction, user):
     GUILD_ID = config_discord["guild_id"]
@@ -99,7 +99,7 @@ async def edit_item(reaction, user):
     item_quantity_database = productinfo[5]
     if str(item_quantity_database) == "-1":
         item_quantity = "Unlimited"
-    else: 
+    else:
         item_quantity = item_quantity_database
 
     while True:
@@ -108,9 +108,9 @@ async def edit_item(reaction, user):
         embed.add_field(name = f"Quantity: {item_quantity}", value = ".", inline = True)
         if str(item_image) != "." and "None":
             embed.set_image(url = item_image)
-        await edit_item_channel.send(embed=embed, content="")  
+        await edit_item_channel.send(embed=embed, content="")
 
-        embed = discord.Embed(title = "How to edit:" , description = "" , color = discord.Colour.from_rgb(255, 0, 0)) 
+        embed = discord.Embed(title = "How to edit:" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
         embed.add_field(name = f"Edit name", value = "Usage: =name", inline = True)
         embed.add_field(name = f"Edit description", value = "Usage: =description", inline = True)
         embed.add_field(name = f"Edit image", value = "Usage: =image", inline = True)
@@ -118,8 +118,8 @@ async def edit_item(reaction, user):
         embed.add_field(name = f"Edit quantity", value = "Usage: =quantity", inline = True)
         embed.add_field(name = f"Cancel editing", value = "Usage: =cancel", inline = True)
         embed.add_field(name = f"Save changes", value = "Usage: =save", inline = True)
-        # embed.add_field(name = f"DISABLED: Edit category", value = "Usage: =category", inline = True)
-        await edit_item_channel.send(embed=embed, content=f"<@{user.id}>")  
+        #embed.add_field(name = f"DISABLED: Edit category", value = "Usage: =category", inline = True)
+        await edit_item_channel.send(embed=embed, content=f"<@{user.id}>")
 
         edit_item_menu_message = await client.wait_for('message', check=check)
         edit_item_menu = edit_item_menu_message.content
@@ -133,8 +133,8 @@ async def edit_item(reaction, user):
                 new_item_name = item_name_message.content
                 if len(new_item_name) > 256:
                     embed = discord.Embed(title = "The maximum length is 256 characters." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
-                    await edit_item_channel.send(embed=embed)                
-                else: 
+                    await edit_item_channel.send(embed=embed)
+                else:
                     item_name = new_item_name
                     break
             embed = discord.Embed(title = "Name set to:" , description = f"```{item_name}```" , color = discord.Colour.from_rgb(255, 0, 0))
@@ -147,7 +147,7 @@ async def edit_item(reaction, user):
                 item_description_message = await client.wait_for('message', check=check)
                 new_item_description = item_description_message.content
                 if len(new_item_description) > 1024:
-                    embed = discord.Embed(title = "The maximum length is 2048 characters." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+                    embed = discord.Embed(title = "The maximum length is 1024 characters." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
                     await edit_item_channel.send(embed=embed)
                 else:
                     item_description = new_item_description
@@ -189,7 +189,7 @@ async def edit_item(reaction, user):
                 await edit_item_channel.send(embed=embed)
                 item_price_message = await client.wait_for('message', check=check)
                 new_item_price = item_price_message.content
-                try: 
+                try:
                     new_item_price = round(float(new_item_price), 2)
                     if new_item_price > 0:
                         item_price = new_item_price
@@ -256,7 +256,7 @@ async def edit_item(reaction, user):
             await edit_item_channel.send(embed=embed)
 
 async def cart_ticket(database_user, reaction, user):
-    print(f"{user}") 
+    print(f"{user}")
     cart_cursor.execute(f"SELECT EXISTS (SELECT * FROM {database_user})")
     cart_exists = cart_cursor.fetchall()
     if cart_exists == [(1,)]:
@@ -288,7 +288,7 @@ async def cart_ticket(database_user, reaction, user):
 
         GUILD_ID = config_discord["guild_id"]
         guild = await client.fetch_guild(GUILD_ID)
-        
+
         ticketchannel = await guild.create_text_channel(f"order-{database_user}")
 
         await ticketchannel.set_permissions(guild.default_role, read_messages=False, send_messages=False)
@@ -428,7 +428,7 @@ async def addchannel_command(message):
         category_message = await client.wait_for('message', check=check)
         category_name = category_message.content
         for category in categories:
-            if category.name == category_name: 
+            if category.name == category_name:
                 new_category = category
         if "new_category" in locals():
             break
@@ -451,7 +451,7 @@ def is_url_image(image_url):
     r = requests.head(image_url)
     if r.headers["content-type"] in image_formats:
         return True
-    return False   
+    return False
 
 async def additem_command(message):
     channel = message.channel
@@ -460,10 +460,6 @@ async def additem_command(message):
     def check(m):
         return m.channel == channel and m.author == author
 
-    # categories = message.guild.categories
-    # print(categories)
-    # for category in categories:
-    #     print(category)
     while True:
         embed = discord.Embed(title = "What should be the item name?" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
         await message.channel.send(embed=embed)
@@ -472,10 +468,10 @@ async def additem_command(message):
         if len(item_name) > 256:
             embed = discord.Embed(title = "The maximum length is 256 characters." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
             await message.channel.send(embed=embed)
-        else: 
+        else:
             break
     
-    while True:        
+    while True:
         embed = discord.Embed(title = "What should be the item description?" , description = "Enter . for no description." , color = discord.Colour.from_rgb(255, 0, 0))
         await message.channel.send(embed=embed)
         item_description_message = await client.wait_for('message', check=check)
@@ -489,7 +485,7 @@ async def additem_command(message):
         embed = discord.Embed(title = "What should be the item image?" , description = "Please enter public URL to the image \nValid Files are png, jpg, jpeg or gif. \n Enter a . for no image." , color = discord.Colour.from_rgb(255, 0, 0))
         await message.channel.send(embed=embed)
         item_image_message = await client.wait_for('message', check=check)
-        item_image = item_image_message.content        
+        item_image = item_image_message.content
         if str(item_image) == ".":
             break
         elif validators.url(item_image) == True:
@@ -617,6 +613,6 @@ async def on_message(message):
             elif message.content.startswith("=additem"):
                 await additem_command(message)
             elif message.content.startswith("=add"):
-                await add_command(message) 
-                
+                await add_command(message)
+
 client.run(config_discord["bot_token"])
