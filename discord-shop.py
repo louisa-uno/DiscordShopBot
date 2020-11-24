@@ -68,7 +68,6 @@ async def on_raw_reaction_add(raw_reaction):
                         await message.channel.delete()   
 
 async def edit_item(reaction, user):
-    message = reaction.message
     GUILD_ID = config_discord["guild_id"]
     guild = await client.fetch_guild(GUILD_ID)
     guild_member = await guild.fetch_member(user.id)
@@ -126,49 +125,109 @@ async def edit_item(reaction, user):
         edit_item_menu = edit_item_menu_message.content
 
         if edit_item_menu == "=name":
-            embed = discord.Embed(title = "What should be the item name?" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
-            embed.add_field(name = f"Current name:", value = f"```{item_name}```", inline = True)
-            await edit_item_channel.send(embed=embed)
-            item_name_message = await client.wait_for('message', check=check)
-            item_name = item_name_message.content
+            while True:
+                embed = discord.Embed(title = "What should be the item name?" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+                embed.add_field(name = f"Current name:", value = f"```{item_name}```", inline = True)
+                await edit_item_channel.send(embed=embed)
+                item_name_message = await client.wait_for('message', check=check)
+                new_item_name = item_name_message.content
+                if len(new_item_name) > 256:
+                    embed = discord.Embed(title = "The maximum length is 256 characters." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+                    await edit_item_channel.send(embed=embed)                
+                else: 
+                    item_name = new_item_name
+                    break
             embed = discord.Embed(title = "Name set to:" , description = f"```{item_name}```" , color = discord.Colour.from_rgb(255, 0, 0))
             await edit_item_channel.send(embed=embed)
         elif edit_item_menu == "=description":
-            embed = discord.Embed(title = "What should be the item description?" , description = "Enter . for no description." , color = discord.Colour.from_rgb(255, 0, 0))
-            embed.add_field(name = f"Current description:", value = f"```{item_description}```", inline = True)
-            await edit_item_channel.send(embed=embed)
-            item_description_message = await client.wait_for('message', check=check)
-            item_description = item_description_message.content
+            while True:
+                embed = discord.Embed(title = "What should be the item description?" , description = "Enter . for no description." , color = discord.Colour.from_rgb(255, 0, 0))
+                embed.add_field(name = f"Current description:", value = f"```{item_description}```", inline = True)
+                await edit_item_channel.send(embed=embed)
+                item_description_message = await client.wait_for('message', check=check)
+                new_item_description = item_description_message.content
+                if len(new_item_description) > 1024:
+                    embed = discord.Embed(title = "The maximum length is 2048 characters." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+                    await edit_item_channel.send(embed=embed)
+                else:
+                    item_description = new_item_description
+                    break
             embed = discord.Embed(title = "Description set to:" , description = f"```{item_description}```" , color = discord.Colour.from_rgb(255, 0, 0))
             await edit_item_channel.send(embed=embed)
         elif edit_item_menu == "=image":
-            embed = discord.Embed(title = "What should be the new item image?" , description = "Please enter public URL to the image \nValid Files are png, jpg or gif. \n Enter a . for no image." , color = discord.Colour.from_rgb(255, 0, 0))
-            embed.add_field(name = f"Current image:", value = f"```{item_image}```", inline = True)
-            if str(item_image) != "." and "None":
-                embed.set_image(url = item_image)
-            await edit_item_channel.send(embed=embed)
-            item_image_message = await client.wait_for('message', check=check)
-            item_image = item_image_message.content
+            while True:
+                embed = discord.Embed(title = "What should be the new item image?" , description = "Please enter public URL to the image \nValid Files are png, jpg or gif. \n Enter a . for no image." , color = discord.Colour.from_rgb(255, 0, 0))
+                embed.add_field(name = f"Current image:", value = f"```{item_image}```", inline = True)
+                if str(item_image) != "." and "None":
+                    embed.set_image(url = item_image)
+                await edit_item_channel.send(embed=embed)
+                item_image_message = await client.wait_for('message', check=check)
+                new_item_image = item_image_message.content
+                if str(new_item_image) == ".":
+                    item_image = new_item_image
+                    break
+                elif validators.url(new_item_image) == True:
+                    if len(new_item_image) > 1024:
+                        embed = discord.Embed(title = "The maximum length is 1024 characters." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+                        await edit_item_channel.send(embed=embed)
+                    else:
+                        if is_url_image(new_item_image) == True:
+                            item_image = new_item_image
+                            break
+                        else:
+                            embed = discord.Embed(title = "The image url isn't the right file format." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+                            await edit_item_channel.send(embed=embed)
+                else: 
+                    embed = discord.Embed(title = "The image url is not public or not existing." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+                    await edit_item_channel.send(embed=embed)
             embed = discord.Embed(title = "Image set to:" , description = f"```{item_image}```" , color = discord.Colour.from_rgb(255, 0, 0))
             await edit_item_channel.send(embed=embed)
         elif edit_item_menu == "=price":
-            embed = discord.Embed(title = "What should be the item price?" , description = "Please enter the price like this: 0.1" , color = discord.Colour.from_rgb(255, 0, 0))
-            embed.add_field(name = f"Current price:", value = f"```{item_price}```", inline = True)
-            await edit_item_channel.send(embed=embed)
-            item_price_message = await client.wait_for('message', check=check)
-            item_price = item_price_message.content
+            while True:
+                embed = discord.Embed(title = "What should be the item price?" , description = "Please enter the price like this: 0.1" , color = discord.Colour.from_rgb(255, 0, 0))
+                embed.add_field(name = f"Current price:", value = f"```{item_price}```", inline = True)
+                await edit_item_channel.send(embed=embed)
+                item_price_message = await client.wait_for('message', check=check)
+                new_item_price = item_price_message.content
+                try: 
+                    new_item_price = round(float(new_item_price), 2)
+                    if new_item_price > 0:
+                        item_price = new_item_price
+                        break
+                    elif new_item_price == 0:
+                        embed = discord.Embed(title = "The item price can't be zero." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+                        await edit_item_channel.send(embed=embed)
+                    else:
+                        embed = discord.Embed(title = "The item price can't be below zero" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+                        await edit_item_channel.send(embed=embed)
+                except ValueError:
+                    embed = discord.Embed(title = "Please enter a valid price." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+                    await edit_item_channel.send(embed=embed)
             embed = discord.Embed(title = "Price set to:" , description = f"```{item_price}```" , color = discord.Colour.from_rgb(255, 0, 0))
             await edit_item_channel.send(embed=embed)
         elif edit_item_menu == "=quantity":
-            embed = discord.Embed(title = "What should be the item quantity?" , description = "0 means out of stock \n-1 means unlimited" , color = discord.Colour.from_rgb(255, 0, 0))
-            embed.add_field(name = f"Current quantity:", value = f"```{item_quantity}```", inline = True)
-            await edit_item_channel.send(embed=embed)
-            item_quantity_message = await client.wait_for('message', check=check)
-            item_quantity_database = item_quantity_message.content
-            if str(item_quantity_database) == "-1":
-                item_quantity = "Unlimited"
-            else: 
-                item_quantity = item_quantity_database
+            while True:
+                embed = discord.Embed(title = "What should be the item quantity?" , description = "0 means out of stock \n-1 means unlimited" , color = discord.Colour.from_rgb(255, 0, 0))
+                embed.add_field(name = f"Current quantity:", value = f"```{item_quantity}```", inline = True)
+                await edit_item_channel.send(embed=embed)
+                item_quantity_message = await client.wait_for('message', check=check)
+                new_item_quantity_database = item_quantity_message.content
+                try: 
+                    new_item_quantity_database = int(new_item_quantity_database)
+                    if new_item_quantity_database > -1:
+                        item_quantity = new_item_quantity_database
+                        item_quantity_database = new_item_quantity_database
+                        break
+                    elif new_item_quantity_database == -1:
+                        item_quantity = "Unlimited"
+                        item_quantity_database = new_item_quantity_database
+                        break
+                    else:
+                        embed = discord.Embed(title = "The item quantity can't be below -1(Unlimited)." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+                        await edit_item_channel.send(embed=embed)
+                except ValueError:
+                    embed = discord.Embed(title = "Please enter a valid quantity." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+                    await edit_item_channel.send(embed=embed)
             embed = discord.Embed(title = "Quantity set to:" , description = f"```{item_quantity}```" , color = discord.Colour.from_rgb(255, 0, 0))
             await edit_item_channel.send(embed=embed)
         elif edit_item_menu == "=save":
@@ -339,11 +398,8 @@ async def addcategory_command(message):
     guild = await client.fetch_guild(GUILD_ID)
     channel = message.channel
     author = message.author
-
-    categories = message.guild.categories    
-
+    
     embed = discord.Embed(title = "What should be the category name?" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
-
     await message.channel.send(embed=embed)
 
     def check(m):
@@ -364,11 +420,11 @@ async def addchannel_command(message):
     channel = message.channel
     author = message.author
     categories = message.guild.categories
+    def check(m):
+        return m.channel == channel and m.author == author
     while True:
         embed = discord.Embed(title = "In which category should the new channel be?" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
         await message.channel.send(embed=embed)
-        def check(m):
-            return m.channel == channel and m.author == author
         category_message = await client.wait_for('message', check=check)
         category_name = category_message.content
         for category in categories:
@@ -383,8 +439,6 @@ async def addchannel_command(message):
     embed = discord.Embed(title = "What should be the channel name?" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
     await message.channel.send(embed=embed)
 
-    def check(m):
-        return m.channel == channel and m.author == author
     channel_name_message = await client.wait_for('message', check=check)
     channel_name = channel_name_message.content
 
@@ -400,8 +454,6 @@ def is_url_image(image_url):
     return False   
 
 async def additem_command(message):
-    GUILD_ID = config_discord["guild_id"]
-    guild = await client.fetch_guild(GUILD_ID)
     channel = message.channel
     author = message.author
 
@@ -418,18 +470,18 @@ async def additem_command(message):
         item_name_message = await client.wait_for('message', check=check)
         item_name = item_name_message.content
         if len(item_name) > 256:
-            await message.channel.senddiscord.Embed(title = "The maximum length is 256 characters." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+            embed = discord.Embed(title = "The maximum length is 256 characters." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+            await message.channel.send(embed=embed)
         else: 
             break
-    
     
     while True:        
         embed = discord.Embed(title = "What should be the item description?" , description = "Enter . for no description." , color = discord.Colour.from_rgb(255, 0, 0))
         await message.channel.send(embed=embed)
         item_description_message = await client.wait_for('message', check=check)
         item_description = item_description_message.content
-        if len(item_description) > 2048:
-            await message.channel.send(title = "The maximum length is 2048 characters." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+        if len(item_description) > 1024:
+            await message.channel.send(title = "The maximum length is 1024 characters." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
         else:
             break
 
@@ -453,10 +505,6 @@ async def additem_command(message):
         else: 
             embed = discord.Embed(title = "The image url is not public or not existing." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
             await message.channel.send(embed=embed)
-
-
-
-
 
     while True:
         embed = discord.Embed(title = "What should be the item price?" , description = "Please enter the price like this: 0.1" , color = discord.Colour.from_rgb(255, 0, 0))
@@ -509,9 +557,6 @@ async def additem_command(message):
         except IndexError:
             embed = discord.Embed(title = "Please mention a valid category." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
             await message.channel.send(embed=embed)
-
-                    
-
 
     embed = discord.Embed(title = item_name , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
                     
