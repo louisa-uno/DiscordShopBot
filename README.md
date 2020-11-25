@@ -12,15 +12,23 @@
 pip install -r requirements.txt
 ```
 - #### 2. Fill out the config.json
-##### 2.1 Fill the essentials out and test the connection using the included tool
+- ##### 2.1 Fill the essentials out and test the connection using the included tool
 ```python
 python configure.py
 ```
-##### 2.2 Optional: Set custom messages using the config.json
+- ##### 2.2 Optional: Set custom messages using the config.json
 - #### 3. Start the discord-shop
 ```python
 python discord-shop.py
 ```
+- #### 4. Optional: Use Docker
+- ##### 4.1 Create the docker image
+##### Navigate first into the discord-shop folder and then enter:
+```bash
+docker build -t discord-shop .
+```
+- ##### 4.2 Upload the docker image to your server or run it on your local machine
+
 
 ## Usage
 #### You must have the "Support" role on your server in order to use the bot.

@@ -6,9 +6,9 @@ import requests
 import validators
 
 with open("config.json") as f:
-	config = json.load(f)
-	config_mysql = config["mysql"]
-	config_discord = config["discord"]
+    config = json.load(f)
+    config_mysql = config["mysql"]
+    config_discord = config["discord"]
 
 client = discord.Client()
 
@@ -309,26 +309,22 @@ def cart(database_user, cart_add_count, reaction):
 
     cart_cursor.execute(f"CREATE TABLE IF NOT EXISTS `{database_user}` (`id` varchar(255) DEFAULT NULL, `quantity` varchar(255) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4")
     cart_database.commit()
-    
-    cart_cursor.execute(f"SELECT EXISTS (SELECT * FROM {database_user})")
-    cart_product_exists = cart_cursor.fetchall()
 
-    if cart_product_exists == [(1,)]:
-        cart_cursor.execute(f"SELECT * FROM {database_user} WHERE id ='{productid}'")
-        cart = cart_cursor.fetchall()
+    cart_cursor.execute(f"SELECT * FROM {database_user} WHERE id ='{productid}'")
+    cart = cart_cursor.fetchall()
+    if cart == []:
+        cart_cursor.execute(f"INSERT INTO `{database_user}` (`id`, `quantity`) VALUES ('{productid}', '{cart_add_count}')")
+        cart_database.commit()
+    else:
         product = cart[0]
         cart_product_count = int(product[1])
-
         new_cart_product_count = cart_product_count + cart_add_count
         if new_cart_product_count <= 0:
             cart_cursor.execute(f"DELETE FROM {database_user} WHERE id = '{productid}'")
         else:
             cart_cursor.execute(f"UPDATE {database_user} SET quantity = '{new_cart_product_count}' WHERE id = '{productid}'")
         cart_database.commit()
-    else:
-        if cart_add_count > 0:
-            cart_cursor.execute(f"INSERT INTO `{database_user}` (`id`, `quantity`) VALUES ('{productid}', '{cart_add_count}')")
-            cart_database.commit()
+
 
 async def cart_message(database_user, reaction, user):
     cart_cursor.execute(f"SELECT EXISTS (SELECT * FROM {database_user})")
