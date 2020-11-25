@@ -348,7 +348,7 @@ async def cart_message(database_user, reaction, user):
         embed.add_field(name = "Count", value = f"{productquantity}", inline = True)
         embed.add_field(name = "Price", value = f"{productprices}", inline = True)
         embed.add_field(name = f"Total: {round(total, 2)}€", value = f"Press 💰 to order, or press 🗑️ to clear the cart\n(Maybe this message won't display well on mobile devices)\nDeveloper: Louis_45#0553 | [GitHub](https://github.com/Luois45)", inline = True)
-        
+
         DMChannel = await user.create_dm()
         cart_message = await DMChannel.history().find(lambda m: m.author.id == client.user.id)
         if cart_message == None:
@@ -493,7 +493,7 @@ async def additem_command(message):
                 else:
                     embed = discord.Embed(title = "The image url isn't the right file format." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
                     await message.channel.send(embed=embed)
-        else: 
+        else:
             embed = discord.Embed(title = "The image url is not public or not existing." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
             await message.channel.send(embed=embed)
 
@@ -502,7 +502,7 @@ async def additem_command(message):
         await message.channel.send(embed=embed)
         item_price_message = await client.wait_for('message', check=check)
         item_price = item_price_message.content
-        try: 
+        try:
             item_price = round(float(item_price), 2)
             if item_price > 0:
                 break
