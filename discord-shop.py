@@ -376,7 +376,7 @@ async def delete_messages(channel):
 
 async def help_command(message):
     embed = discord.Embed(title = "Command Help" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
-                
+
     embed.add_field(name = f"Command Help", value = "Usage: =help", inline = True)
     embed.add_field(name = f"Delete all messages in a channel", value = "Usage: =clear", inline = True)
     embed.add_field(name = f"Create a shop category", value = "Usage: =addcategory", inline = True)
@@ -521,7 +521,7 @@ async def additem_command(message):
         await message.channel.send(embed=embed)
         item_quantity_message = await client.wait_for('message', check=check)
         item_quantity_database = item_quantity_message.content
-        try: 
+        try:
             item_quantity_database = int(item_quantity_database)
             if item_quantity_database > -1:
                 item_quantity = item_quantity_database
