@@ -29,7 +29,6 @@ docker build -t discord-shop .
 ```
 - ##### 4.2 Upload the docker image to your server or run it on your local machine
 
-
 ## Usage
 #### You must have the "Support" role on your server in order to use the bot.
 
