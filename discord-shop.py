@@ -177,7 +177,7 @@ async def edit_item(reaction, user):
                         else:
                             embed = discord.Embed(title = "The image url isn't the right file format." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
                             await edit_item_channel.send(embed=embed)
-                else: 
+                else:
                     embed = discord.Embed(title = "The image url is not public or not existing." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
                     await edit_item_channel.send(embed=embed)
             embed = discord.Embed(title = "Image set to:" , description = f"```{item_image}```" , color = discord.Colour.from_rgb(255, 0, 0))
@@ -212,7 +212,7 @@ async def edit_item(reaction, user):
                 await edit_item_channel.send(embed=embed)
                 item_quantity_message = await client.wait_for('message', check=check)
                 new_item_quantity_database = item_quantity_message.content
-                try: 
+                try:
                     new_item_quantity_database = int(new_item_quantity_database)
                     if new_item_quantity_database > -1:
                         item_quantity = new_item_quantity_database
@@ -309,7 +309,6 @@ def cart(database_user, cart_add_count, reaction):
 
     cart_cursor.execute(f"CREATE TABLE IF NOT EXISTS `{database_user}` (`id` varchar(255) DEFAULT NULL, `quantity` varchar(255) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4")
     cart_database.commit()
-
     cart_cursor.execute(f"SELECT * FROM {database_user} WHERE id ='{productid}'")
     cart = cart_cursor.fetchall()
     if cart == []:
