@@ -393,7 +393,7 @@ async def addcategory_command(message):
     guild = await client.fetch_guild(GUILD_ID)
     channel = message.channel
     author = message.author
-    
+
     embed = discord.Embed(title = "What should be the category name?" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
     await message.channel.send(embed=embed)
 
