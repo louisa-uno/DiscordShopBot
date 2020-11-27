@@ -1,4 +1,4 @@
-# discord-shop
+![discord-shop](https://i.imgur.com/FIlWlKH.png)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4ac1a9bf94584ad0b8b8e01a0e22eb26)](https://app.codacy.com/gh/Luois45/discord-shop?utm_source=github.com&utm_medium=referral&utm_content=Luois45/discord-shop&utm_campaign=Badge_Grade_Settings)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
 [![built with: Python3](https://camo.githubusercontent.com/0d9fbff04202da688cc79c5ffe984bd171edf453b2e41e5e56e55202dd5bdbb2/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f6275696c74253230776974682d507974686f6e332d7265642e737667)](https://www.python.org/)
