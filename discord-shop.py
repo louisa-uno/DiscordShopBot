@@ -200,11 +200,19 @@ async def edit_item(reaction, user):
                 await edit_item_channel.send(embed=embed)
                 item_name_message = await client.wait_for('message', check=check)
                 new_item_name = item_name_message.content
-                if len(new_item_name) > 256:
-                    embed = discord.Embed(title = "The maximum length is 256 characters." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
-                    await edit_item_channel.send(embed=embed)
+                if new_item_name != item_name:
+                    cart_cursor.execute(f"SELECT * FROM items WHERE name = '{new_item_name}'")
+                    if cart_cursor.fetchall() != []:
+                        embed = discord.Embed(title = "You can't have 2 items with the same name." , description = "Just delete the old one or choose another name to proceed." , color = discord.Colour.from_rgb(255, 0, 0))
+                        await edit_item_channel.send(embed=embed)
+                    else:
+                        if len(new_item_name) > 256:
+                            embed = discord.Embed(title = "The maximum length is 256 characters." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+                            await edit_item_channel.send(embed=embed)
+                        else:
+                            item_name = new_item_name
+                            break
                 else:
-                    item_name = new_item_name
                     break
             embed = discord.Embed(title = "Name set to:" , description = f"```{item_name}```" , color = discord.Colour.from_rgb(255, 0, 0))
             await edit_item_channel.send(embed=embed)
@@ -529,11 +537,17 @@ async def additem_command(message):
         await message.channel.send(embed=embed)
         item_name_message = await client.wait_for('message', check=check)
         item_name = item_name_message.content
-        if len(item_name) > 256:
-            embed = discord.Embed(title = "The maximum length is 256 characters." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+
+        cart_cursor.execute(f"SELECT * FROM items WHERE name = '{item_name}'")
+        if cart_cursor.fetchall() != []:
+            embed = discord.Embed(title = "You can't have 2 items with the same name." , description = "Just delete the old one or choose another name to proceed." , color = discord.Colour.from_rgb(255, 0, 0))
             await message.channel.send(embed=embed)
         else:
-            break
+            if len(item_name) > 256:
+                embed = discord.Embed(title = "The maximum length is 256 characters." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+                await message.channel.send(embed=embed)
+            else:
+                break
     
     while True:
         embed = discord.Embed(title = "What should be the item description?" , description = "Enter . for no description." , color = discord.Colour.from_rgb(255, 0, 0))
