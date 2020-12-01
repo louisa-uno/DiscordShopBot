@@ -80,7 +80,7 @@ async def delete_item(reaction, user):
 
     item_name = reaction.message.embeds[0].title
 
-    print(f"{user}: ✏️  {item_name}")
+    print(f"{user}: 🗑️  {item_name}")
 
     edit_item_channel = await guild.create_text_channel(f"delete-{item_name}")
 
