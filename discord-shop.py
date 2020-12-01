@@ -49,6 +49,8 @@ async def on_raw_reaction_add(raw_reaction):
                         await cart_message(database_user, reaction, user)
                 elif reaction.emoji == "✏️":
                     await edit_item(reaction, user)
+                elif reaction.emoji == "🗑️":
+                    await delete_item(reaction, user)
         elif is_cart(message):
             for reaction in message.reactions:
                 if reaction.count >= 2:
@@ -66,6 +68,73 @@ async def on_raw_reaction_add(raw_reaction):
                     if reaction.emoji == "🗑️":
                         print(f"{user}: 🗑️  Cancelled checkout")
                         await message.channel.delete()
+
+async def delete_item(reaction, user):
+    GUILD_ID = config_discord["guild_id"]
+    guild = await client.fetch_guild(GUILD_ID)
+    guild_member = await guild.fetch_member(user.id)
+
+    role_names = [role.name for role in guild_member.roles]
+    if not "Support" in role_names:
+        return
+
+    item_name = reaction.message.embeds[0].title
+
+    print(f"{user}: ✏️  {item_name}")
+
+    edit_item_channel = await guild.create_text_channel(f"delete-{item_name}")
+
+    await edit_item_channel.set_permissions(guild.default_role, read_messages=False, send_messages=False)
+    await edit_item_channel.set_permissions(user, read_messages=True, send_messages=True)
+    await edit_item_channel.set_permissions(discord.utils.get(guild.roles, name="Support"), read_messages=True, send_messages=True)
+
+    def check(m):
+        return m.channel == edit_item_channel and m.author == guild_member
+
+    cart_cursor.execute(f"SELECT * FROM items WHERE name = '{item_name}'")
+    productinfo = cart_cursor.fetchall()[0]
+    item_id = productinfo[0]
+    item_name = productinfo[1]
+    item_description = productinfo[2]
+    item_image = productinfo[3]
+    item_price = productinfo[4]
+    item_quantity_database = productinfo[5]
+    if str(item_quantity_database) == "-1":
+        item_quantity = "Unlimited"
+    else:
+        item_quantity = item_quantity_database
+
+    while True:
+        embed = discord.Embed(title = f"Item preview:\n\n{item_name}" , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+        embed.add_field(name = f"Price: {item_price}€", value = item_description, inline = True)
+        embed.add_field(name = f"Quantity: {item_quantity}", value = ".", inline = True)
+        if str(item_image) != "." and "None":
+            embed.set_image(url = item_image)
+        await edit_item_channel.send(embed=embed, content="")
+
+        embed = discord.Embed(title = "Are you sure to delete the item?" , description = "Answer with yes or no" , color = discord.Colour.from_rgb(255, 0, 0))
+        await edit_item_channel.send(embed=embed, content=f"<@{user.id}>")
+
+        edit_item_menu_message = await client.wait_for('message', check=check)
+        edit_item_menu = edit_item_menu_message.content
+
+        if edit_item_menu == "yes":
+            embed = discord.Embed(title = "Deleting ..." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+            await edit_item_channel.send(embed=embed)
+            time.sleep(2)
+            
+            cart_cursor.execute(f"DELETE FROM items WHERE id = '{item_id}'")
+            cart_database.commit()
+
+            await reaction.message.delete()
+            await edit_item_channel.delete()
+            break
+        elif edit_item_menu == "no":
+            embed = discord.Embed(title = "Cancelling ..." , description = "" , color = discord.Colour.from_rgb(255, 0, 0))
+            await edit_item_channel.send(embed=embed)
+            time.sleep(2)
+            await edit_item_channel.delete()
+            break
 
 async def edit_item(reaction, user):
     GUILD_ID = config_discord["guild_id"]

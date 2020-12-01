@@ -37,6 +37,7 @@ docker build -t discord-shop .
 - #### =addcategory: Create a shop category
 - #### =additem: Create a item
 - #### React with ✏️ to a item to edit it.
+- #### React with 🗑️ to a item to delete it.
 
 ## Contributing
 #### Pull requests are welcome. For major changes, please open an issue upfront to discuss what you would like to change.
