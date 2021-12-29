@@ -983,7 +983,7 @@ async def add_command(message):
 @client.event
 async def on_message(message):
     message = message
-    if message.author != client.user:
+    if message.author != client.user and message.guild != None:
         role_names = [role.name for role in message.author.roles]
         if "Support" in role_names:
             if message.content.startswith("=help"):
