@@ -18,11 +18,19 @@ print(f"MySQL: Logged in as {cart_database.user}")
 cart_cursor = cart_database.cursor(buffered=False)
 cart_cursor.execute(f"CREATE TABLE IF NOT EXISTS `items` (`id` int NOT NULL AUTO_INCREMENT PRIMARY KEY, `name` varchar(256) DEFAULT NULL, `description` varchar(1024) DEFAULT NULL, `url` varchar(1024) DEFAULT NULL, `price` varchar(255) DEFAULT NULL, `quantity` varchar(255) DEFAULT NULL, `channel_id` varchar(255) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4")
 cart_database.commit()
-
+  
 @client.event
 async def on_ready():
     print("Discord: Logged in as {0.user}".format(client))
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name="Anarchy Shop"))
+    # Creates Support role if it doesn't exists
+    for guild in client.guilds:
+        roleExists = False
+        for role in guild.roles:
+            if "Support" in role.name:
+                roleExists = True
+        if roleExists == False:
+            await guild.create_role(name="Support", reason="Is necessary for DiscordShopBot")
 
 @client.event
 async def on_raw_reaction_add(raw_reaction):
@@ -677,6 +685,7 @@ async def add_command(message):
 
 @client.event
 async def on_message(message):
+    message = message
     if message.author != client.user:
         role_names = [role.name for role in message.author.roles]
         if "Support" in role_names:
