@@ -40,12 +40,8 @@ async def get_database_user(user, reaction):
     return database_user
 
 
-@client.event
-async def on_ready():
-    print("Discord: Logged in as {0.user}".format(client))
-    await client.change_presence(activity=discord.Activity(
-        type=discord.ActivityType.playing, name="DiscordShopBot"))
-    # Creates Support role if it doesn't exists
+async def start_setup(message):
+    # Performs the setup of the bot
     for guild in client.guilds:
         roleExists = False
         categoryExists = False
@@ -60,6 +56,23 @@ async def on_ready():
                 categoryExists = True
         if categoryExists == False:
             await guild.create_category("orders")
+    embed = discord.Embed(title="Performed setup sucessfully",
+                          description="",
+                          color=discord.Colour.from_rgb(255, 0, 0))
+    embed.add_field(
+        name=f"Developer",
+        value=
+        "Louis_45#0553 | [GitHub](https://github.com/Luois45)\ndiscord-shop@louis45.de",
+        inline=True)
+
+    await message.channel.send(embed=embed)
+
+
+@client.event
+async def on_ready():
+    print("Discord: Logged in as {0.user}".format(client))
+    await client.change_presence(activity=discord.Activity(
+        type=discord.ActivityType.playing, name="DiscordShopBot"))
 
 
 @client.event
@@ -1028,6 +1041,8 @@ async def on_message(message):
     message = message
     if message.author != client.user and message.guild != None:
         role_names = [role.name for role in message.author.roles]
+        if message.content.startswith("=setup"):
+            await start_setup(message)
         if "Seller" in role_names:
             if message.content.startswith("=help"):
                 await help_command(message)

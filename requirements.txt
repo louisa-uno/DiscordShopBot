@@ -1,4 +1,5 @@
 ###### Requirements ######
+numpy
 discord.py==1.5.1
 mysql-connector-python==8.0.22
 requests==2.25.0
