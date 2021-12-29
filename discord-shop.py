@@ -12,7 +12,7 @@ with open("config.json") as f:
 
 client = discord.Client()
 
-cart_database = test_mysql = mysql.connector.connect(user=config_mysql["user"],password=config_mysql["password"],host=config_mysql["host"],database=config_mysql["database"])
+cart_database = test_mysql = mysql.connector.connect(user=config_mysql["user"],password=config_mysql["password"],host=config_mysql["host"],port=config_mysql["port"],database=config_mysql["database"])
 
 print(f"MySQL: Logged in as {cart_database.user}")
 cart_cursor = cart_database.cursor(buffered=False)

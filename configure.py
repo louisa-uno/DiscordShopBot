@@ -29,6 +29,7 @@ while True:
 
 	if option == "1":
 		config_mysql["host"] = input("Please enter your mysql host:")
+		config_mysql["port"] = input("Pleasen enter your mysql port:")
 		config_mysql["user"] = input("Please enter your mysql username:")
 		config_mysql["password"] = input("Please enter your mysql password:")
 		config_mysql["database"] = input("Please enter your mysql database name:")
@@ -37,7 +38,7 @@ while True:
 		config_discord["guild_id"] = input("Please enter the guild_id of your discord server:")
 	elif option == "2":
 		try:
-			test_mysql = mysql.connector.connect(user=config_mysql["user"],password=config_mysql["password"],host=config_mysql["host"],database=config_mysql["database"])
+			test_mysql = mysql.connector.connect(user=config_mysql["user"],password=config_mysql["password"],host=config_mysql["host"],port=config_mysql["port"],database=config_mysql["database"])
 			test_mysql.close()
 			print("mysql: Connection is working")
 		except mysql.connector.Error as err:
