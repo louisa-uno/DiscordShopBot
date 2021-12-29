@@ -5,7 +5,16 @@
 
 ### A user-friendly shop system for discord
 
-## Installation
+## Add the bot to your server
+
+- #### 1. Click on the link and grant the bot admin permissions
+https://discord.com/api/oauth2/authorize?client_id=925539366540025917&permissions=8&scope=bot
+
+- #### 2. Type =setup into any text channel on your discord server for the bot to perform the setup itself
+
+- #### 3. Start to use the bot with =help
+
+## Install the bot yourself
 
 - #### 1. Install the requirements
 ```python
