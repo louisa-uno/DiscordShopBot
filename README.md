@@ -7,7 +7,7 @@
 
 ## Installation
 
-- #### 1. Install the requirements.txt
+- #### 1. Install the requirements
 ```python
 pip install -r requirements.txt
 ```

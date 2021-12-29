@@ -1,0 +1,12 @@
+{
+    "mysql": {
+        "database": "mysql_database",
+        "host": "mysql_host",
+        "port": "mysql_port",
+        "password": "mysql_password",
+        "user": "mysql_user"
+    },
+    "discord": {
+        "bot_token": "discord_bot_token"
+    }
+}

@@ -1,9 +1,11 @@
 import discord
+from discord import message
 import mysql.connector
 import time
 import json
 import requests
 import validators
+from numpy import base_repr
 
 with open("config.json") as f:
     config = json.load(f)
@@ -20,27 +22,44 @@ cart_database = test_mysql = mysql.connector.connect(
     database=config_mysql["database"])
 
 print(f"MySQL: Logged in as {cart_database.user}")
-cart_cursor = cart_database.cursor(buffered=False)
+cart_cursor = cart_database.cursor(buffered=True)
 cart_cursor.execute(
     f"CREATE TABLE IF NOT EXISTS `items` (`id` int NOT NULL AUTO_INCREMENT PRIMARY KEY, `name` varchar(256) DEFAULT NULL, `description` varchar(1024) DEFAULT NULL, `url` varchar(1024) DEFAULT NULL, `price` varchar(255) DEFAULT NULL, `quantity` varchar(255) DEFAULT NULL, `channel_id` varchar(255) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
 )
 cart_database.commit()
 
 
+async def get_database_user(user, reaction):
+    try:
+        guild_id = base_repr(reaction.message.guild.id, 36)
+    except AttributeError:
+        guild_id = reaction.message.embeds[0].fields[3].value.split(
+            "|")[2].replace(" ", "")
+    database_user = f"{user.id}_{guild_id}"
+    print(str(user) + ':' + database_user)
+    return database_user
+
+
 @client.event
 async def on_ready():
     print("Discord: Logged in as {0.user}".format(client))
     await client.change_presence(activity=discord.Activity(
-        type=discord.ActivityType.playing, name="Anarchy Shop"))
+        type=discord.ActivityType.playing, name="DiscordShopBot"))
     # Creates Support role if it doesn't exists
     for guild in client.guilds:
         roleExists = False
+        categoryExists = False
         for role in guild.roles:
-            if "Support" in role.name:
+            if "Seller" in role.name:
                 roleExists = True
         if roleExists == False:
-            await guild.create_role(name="Support",
+            await guild.create_role(name="Seller",
                                     reason="Is necessary for DiscordShopBot")
+        for category in guild.categories:
+            if "orders" in category.name:
+                categoryExists = True
+        if categoryExists == False:
+            await guild.create_category("orders")
 
 
 @client.event
@@ -52,14 +71,14 @@ async def on_raw_reaction_add(raw_reaction):
 
     if user != client.user:
         cart_cursor.execute(
-            f"SELECT EXISTS (SELECT * FROM items WHERE name = '{message.embeds[0].title}')"
+            f"SELECT EXISTS (SELECT * FROM items WHERE name = '{message.embeds[0].title}' AND channel_id = '{message.channel.id}')"
         )
         is_sell_message = cart_cursor.fetchall()
         if is_sell_message == [(1, )]:
             for reaction in message.reactions:
                 await reaction.remove(user=user)
                 if reaction.count >= 2:
-                    database_user = f"{user}".replace("#", "_")
+                    database_user = await get_database_user(user, reaction)
                     if reaction.emoji == "🛒":
                         print(f"{user}: 🛒 Added to cart")
                         cart(database_user, 1, reaction)
@@ -75,13 +94,12 @@ async def on_raw_reaction_add(raw_reaction):
         elif is_cart(message):
             for reaction in message.reactions:
                 if reaction.count >= 2:
+                    database_user = await get_database_user(user, reaction)
                     if reaction.emoji == "💰":
                         print(f"{user}: 💰  Gone to checkout")
-                        database_user = f"{user}".replace("#", "_")
                         await cart_ticket(database_user, reaction, user)
                     elif reaction.emoji == "🗑️":
                         print(f"{user}: 🗑️  Emptied cart")
-                        database_user = f"{user}".replace("#", "_")
                         await delete_cart(reaction, database_user, user)
         elif is_order(message):
             for reaction in message.reactions:
@@ -92,12 +110,11 @@ async def on_raw_reaction_add(raw_reaction):
 
 
 async def delete_item(reaction, user):
-    GUILD_ID = config_discord["guild_id"]
-    guild = await client.fetch_guild(GUILD_ID)
+    guild = reaction.message.guild
     guild_member = await guild.fetch_member(user.id)
 
     role_names = [role.name for role in guild_member.roles]
-    if not "Support" in role_names:
+    if not "Seller" in role_names:
         return
 
     item_name = reaction.message.embeds[0].title
@@ -113,14 +130,16 @@ async def delete_item(reaction, user):
                                             read_messages=True,
                                             send_messages=True)
     await edit_item_channel.set_permissions(discord.utils.get(guild.roles,
-                                                              name="Support"),
+                                                              name="Seller"),
                                             read_messages=True,
                                             send_messages=True)
 
     def check(m):
         return m.channel == edit_item_channel and m.author == guild_member
 
-    cart_cursor.execute(f"SELECT * FROM items WHERE name = '{item_name}'")
+    cart_cursor.execute(
+        f"SELECT * FROM items WHERE name = '{item_name}' AND channel_id = '{reaction.message.channel.id}'"
+    )
     productinfo = cart_cursor.fetchall()[0]
     item_id = productinfo[0]
     item_name = productinfo[1]
@@ -179,12 +198,11 @@ async def delete_item(reaction, user):
 
 
 async def edit_item(reaction, user):
-    GUILD_ID = config_discord["guild_id"]
-    guild = await client.fetch_guild(GUILD_ID)
+    guild = reaction.message.guild
     guild_member = await guild.fetch_member(user.id)
 
     role_names = [role.name for role in guild_member.roles]
-    if not "Support" in role_names:
+    if not "Seller" in role_names:
         return
 
     item_name = reaction.message.embeds[0].title
@@ -200,14 +218,16 @@ async def edit_item(reaction, user):
                                             read_messages=True,
                                             send_messages=True)
     await edit_item_channel.set_permissions(discord.utils.get(guild.roles,
-                                                              name="Support"),
+                                                              name="Seller"),
                                             read_messages=True,
                                             send_messages=True)
 
     def check(m):
         return m.channel == edit_item_channel and m.author == guild_member
 
-    cart_cursor.execute(f"SELECT * FROM items WHERE name = '{item_name}'")
+    cart_cursor.execute(
+        f"SELECT * FROM items WHERE name = '{item_name}' AND channel_id = '{reaction.message.channel.id}'"
+    )
     productinfo = cart_cursor.fetchall()[0]
     item_id = productinfo[0]
     item_name = productinfo[1]
@@ -272,7 +292,8 @@ async def edit_item(reaction, user):
                 new_item_name = item_name_message.content
                 if new_item_name != item_name:
                     cart_cursor.execute(
-                        f"SELECT * FROM items WHERE name = '{new_item_name}'")
+                        f"SELECT * FROM items WHERE name = '{new_item_name}' AND channel_id = '{reaction.message.channel.id}'"
+                    )
                     if cart_cursor.fetchall() != []:
                         embed = discord.Embed(
                             title="You can't have 2 items with the same name.",
@@ -492,12 +513,20 @@ async def edit_item(reaction, user):
 
 async def cart_ticket(database_user, reaction, user):
     print(f"{user}")
-    cart_cursor.execute(f"SELECT EXISTS (SELECT * FROM {database_user})")
+    cart_cursor.execute(f"SELECT EXISTS (SELECT * FROM `{database_user}`)")
     cart_exists = cart_cursor.fetchall()
     if cart_exists == [(1, )]:
-        cart_cursor.execute(f"SELECT * FROM {database_user}")
+        cart_cursor.execute(f"SELECT * FROM `{database_user}`")
         products = cart_cursor.fetchall()
-        embed = discord.Embed(title=config_discord["messages"]["order_title"],
+
+        guild_msg_id = int(database_user.split("_")[1], 36)
+        guild_ids = []
+        for guild in client.guilds:
+            guild_ids.append(guild.id)
+        id = guild_ids.index(guild_msg_id)
+        guild_msg = client.guilds[id]
+
+        embed = discord.Embed(title=f"Your order at {guild_msg}",
                               description="",
                               color=discord.Colour.from_rgb(255, 0, 0))
         productnames = ""
@@ -523,16 +552,14 @@ async def cart_ticket(database_user, reaction, user):
             value=f"(Maybe this message won't display well on mobile devices)",
             inline=True)
 
-        await delete_dm(user)
+        await delete_cart(reaction, database_user, user)
 
         cart_cursor.execute(f"DROP TABLE IF EXISTS `{database_user}`")
         cart_database.commit()
 
-        GUILD_ID = config_discord["guild_id"]
-        guild = await client.fetch_guild(GUILD_ID)
+        guild = await client.fetch_guild(int(database_user.split("_")[1], 36))
 
-        ticketchannel = await guild.create_text_channel(
-            f"order-{database_user}")
+        ticketchannel = await guild.create_text_channel(f"order-{user}")
 
         await ticketchannel.set_permissions(guild.default_role,
                                             read_messages=False,
@@ -541,7 +568,7 @@ async def cart_ticket(database_user, reaction, user):
                                             read_messages=True,
                                             send_messages=True)
         await ticketchannel.set_permissions(discord.utils.get(guild.roles,
-                                                              name="Support"),
+                                                              name="Seller"),
                                             read_messages=True,
                                             send_messages=True)
 
@@ -551,14 +578,14 @@ async def cart_ticket(database_user, reaction, user):
 
 
 async def delete_cart(reaction, database_user, user):
-    cart_cursor.execute(f"DROP TABLE IF EXISTS {database_user}")
+    cart_cursor.execute(f"DROP TABLE IF EXISTS `{database_user}`")
     cart_database.commit()
-    await delete_dm(user)
+    await reaction.message.delete()
 
 
 def cart(database_user, cart_add_count, reaction):
     cart_cursor.execute(
-        f"SELECT `id`, `quantity` FROM items WHERE name = '{reaction.message.embeds[0].title}'"
+        f"SELECT `id`, `quantity` FROM items WHERE name = '{reaction.message.embeds[0].title}' AND channel_id = '{reaction.message.channel.id}'"
     )
     productid = cart_cursor.fetchone()[0]
 
@@ -567,7 +594,7 @@ def cart(database_user, cart_add_count, reaction):
     )
     cart_database.commit()
     cart_cursor.execute(
-        f"SELECT * FROM {database_user} WHERE id ='{productid}'")
+        f"SELECT * FROM `{database_user}` WHERE id ='{productid}'")
     cart = cart_cursor.fetchall()
     if cart == []:
         cart_cursor.execute(
@@ -580,21 +607,29 @@ def cart(database_user, cart_add_count, reaction):
         new_cart_product_count = cart_product_count + cart_add_count
         if new_cart_product_count <= 0:
             cart_cursor.execute(
-                f"DELETE FROM {database_user} WHERE id = '{productid}'")
+                f"DELETE FROM `{database_user}` WHERE id = '{productid}'")
         else:
             cart_cursor.execute(
-                f"UPDATE {database_user} SET quantity = '{new_cart_product_count}' WHERE id = '{productid}'"
+                f"UPDATE `{database_user}` SET quantity = '{new_cart_product_count}' WHERE id = '{productid}'"
             )
         cart_database.commit()
 
 
 async def cart_message(database_user, reaction, user):
-    cart_cursor.execute(f"SELECT EXISTS (SELECT * FROM {database_user})")
+    cart_cursor.execute(f"SELECT EXISTS (SELECT * FROM `{database_user}`)")
     cart_exists = cart_cursor.fetchall()
     if cart_exists == [(1, )]:
-        cart_cursor.execute(f"SELECT * FROM {database_user}")
+        cart_cursor.execute(f"SELECT * FROM `{database_user}`")
         products = cart_cursor.fetchall()
-        embed = discord.Embed(title=config_discord["messages"]["cart_title"],
+
+        guild_msg_id = int(database_user.split("_")[1], 36)
+        guild_ids = []
+        for guild in client.guilds:
+            guild_ids.append(guild.id)
+        id = guild_ids.index(guild_msg_id)
+        guild_msg = client.guilds[id]
+
+        embed = discord.Embed(title=f"Your cart at {guild_msg}",
                               description="",
                               color=discord.Colour.from_rgb(255, 0, 0))
         productnames = ""
@@ -602,13 +637,20 @@ async def cart_message(database_user, reaction, user):
         productprices = ""
         total = 0
         for product in products:
-            cart_cursor.execute(
-                f"SELECT * FROM items WHERE id = '{product[0]}'")
-            productinfo = cart_cursor.fetchall()[0]
-            productnames = productnames + productinfo[1] + "\n "
-            productquantity = productquantity + product[1] + "\n "
-            productprices = productprices + productinfo[4] + "€" + "\n "
-            total = total + (int(product[1]) * float(productinfo[4]))
+            try:
+                cart_cursor.execute(
+                    f"SELECT * FROM items WHERE id = '{product[0]}'")
+                productinfo = cart_cursor.fetchall()[0]
+                productnames = productnames + productinfo[1] + "\n "
+                productquantity = productquantity + product[1] + "\n "
+                productprices = productprices + productinfo[4] + "€" + "\n "
+                total = total + (int(product[1]) * float(productinfo[4]))
+            except IndexError:
+                cart_cursor.execute(
+                    f"DELETE FROM `{database_user}` WHERE id={product[0]}")
+                print(
+                    f"{user}: ❌ Deleted non-existing item of the items database"
+                )
 
         embed.add_field(name="Name", value=f"{productnames}", inline=True)
         embed.add_field(name="Count", value=f"{productquantity}", inline=True)
@@ -616,12 +658,13 @@ async def cart_message(database_user, reaction, user):
         embed.add_field(
             name=f"Total: {round(total, 2)}€",
             value=
-            f"Press 💰 to order, or press 🗑️ to clear the cart\n(Maybe this message won't display well on mobile devices)\nDeveloper: Louis_45#0553 | [GitHub](https://github.com/Luois45)",
+            f"Press 💰 to order, or press 🗑️ to clear the cart\n(Maybe this message won't display well on mobile devices)\nDeveloper: Louis_45#0553 | [GitHub](https://github.com/Luois45) | {base_repr(reaction.message.guild.id, 36)}",
             inline=True)
 
         DMChannel = await user.create_dm()
         cart_message = await DMChannel.history().find(
-            lambda m: m.author.id == client.user.id)
+            lambda m: database_user.split("_")[1] in m.embeds[0].fields[
+                3].value)
         if cart_message == None:
             sent_cart_message = await DMChannel.send(embed=embed)
             await sent_cart_message.add_reaction('💰')
@@ -638,11 +681,11 @@ async def delete_dm(user):
 
 
 def is_cart(message):
-    return message.embeds[0].title == config_discord["messages"]["cart_title"]
+    return "Your cart at " in message.embeds[0].title
 
 
 def is_order(message):
-    return message.embeds[0].title == config_discord["messages"]["order_title"]
+    return "Your order at " in message.embeds[0].title
 
 
 async def delete_messages(channel):
@@ -682,8 +725,7 @@ async def help_command(message):
 
 
 async def addcategory_command(message):
-    GUILD_ID = config_discord["guild_id"]
-    guild = await client.fetch_guild(GUILD_ID)
+    guild = message.guild
     channel = message.channel
     author = message.author
 
@@ -708,14 +750,13 @@ async def addcategory_command(message):
                                            read_messages=True,
                                            send_messages=False)
     await created_category.set_permissions(discord.utils.get(guild.roles,
-                                                             name="Support"),
+                                                             name="Seller"),
                                            read_messages=True,
                                            send_messages=True)
 
 
 async def addchannel_command(message):
-    GUILD_ID = config_discord["guild_id"]
-    guild = await client.fetch_guild(GUILD_ID)
+    guild = message.guild
     channel = message.channel
     author = message.author
     categories = message.guild.categories
@@ -773,6 +814,26 @@ async def additem_command(message):
         return m.channel == channel and m.author == author
 
     while True:
+        embed = discord.Embed(
+            title="What is the category for your item?",
+            description=
+            "Please mention the category channel with a # before the channel name.",
+            color=discord.Colour.from_rgb(255, 0, 0))
+        await message.channel.send(embed=embed)
+        item_category_message = await client.wait_for('message', check=check)
+        mentioned_item_category = item_category_message.raw_channel_mentions
+        try:
+            mentioned_item_category_id = mentioned_item_category[0]
+            item_category_channel = await client.fetch_channel(
+                mentioned_item_category_id)
+            break
+        except IndexError:
+            embed = discord.Embed(title="Please mention a valid category.",
+                                  description="",
+                                  color=discord.Colour.from_rgb(255, 0, 0))
+            await message.channel.send(embed=embed)
+
+    while True:
         embed = discord.Embed(title="What should be the item name?",
                               description="",
                               color=discord.Colour.from_rgb(255, 0, 0))
@@ -780,7 +841,9 @@ async def additem_command(message):
         item_name_message = await client.wait_for('message', check=check)
         item_name = item_name_message.content
 
-        cart_cursor.execute(f"SELECT * FROM items WHERE name = '{item_name}'")
+        cart_cursor.execute(
+            f"SELECT * FROM items WHERE name = '{item_name}' AND channel_id = '{mentioned_item_category_id}'"
+        )
         if cart_cursor.fetchall() != []:
             embed = discord.Embed(
                 title="You can't have 2 items with the same name.",
@@ -905,26 +968,6 @@ async def additem_command(message):
                                   color=discord.Colour.from_rgb(255, 0, 0))
             await message.channel.send(embed=embed)
 
-    while True:
-        embed = discord.Embed(
-            title="What is the category for your item?",
-            description=
-            "Please mention the category channel with a # before the channel name.",
-            color=discord.Colour.from_rgb(255, 0, 0))
-        await message.channel.send(embed=embed)
-        item_category_message = await client.wait_for('message', check=check)
-        mentioned_item_category = item_category_message.raw_channel_mentions
-        try:
-            mentioned_item_category_id = mentioned_item_category[0]
-            item_category_channel = await client.fetch_channel(
-                mentioned_item_category_id)
-            break
-        except IndexError:
-            embed = discord.Embed(title="Please mention a valid category.",
-                                  description="",
-                                  color=discord.Colour.from_rgb(255, 0, 0))
-            await message.channel.send(embed=embed)
-
     embed = discord.Embed(title=item_name,
                           description="",
                           color=discord.Colour.from_rgb(255, 0, 0))
@@ -932,7 +975,7 @@ async def additem_command(message):
     embed.add_field(name=f"Price: {item_price}€",
                     value=item_description,
                     inline=True)
-    embed.add_field(name=f"Quantity: {item_quantity}", value=".", inline=True)
+    embed.add_field(name=f"Quantity: {item_quantity}", value=f".", inline=True)
     if str(item_image) != ".":
         embed.set_image(url=item_image)
 
@@ -985,7 +1028,7 @@ async def on_message(message):
     message = message
     if message.author != client.user and message.guild != None:
         role_names = [role.name for role in message.author.roles]
-        if "Support" in role_names:
+        if "Seller" in role_names:
             if message.content.startswith("=help"):
                 await help_command(message)
             elif message.content.startswith("=clear"):
