@@ -16,7 +16,6 @@ pip install -r requirements.txt
 ```python
 python configure.py
 ```
-- ##### 2.2 Optional: Set custom messages using the config.json
 - #### 3. Start the discord-shop
 ```python
 python discord-shop.py
