@@ -992,12 +992,16 @@ async def on_message(message):
                 await delete_messages(message.channel)
             elif message.content.startswith("=addcategory"):
                 await addcategory_command(message)
+                await help_command(message)
             elif message.content.startswith("=addchannel"):
                 await addchannel_command(message)
+                await help_command(message)
             elif message.content.startswith("=additem"):
                 await additem_command(message)
+                await help_command(message)
             elif message.content.startswith("=add"):
                 await add_command(message)
+                await help_command(message)
 
 
 client.run(config_discord["bot_token"])
