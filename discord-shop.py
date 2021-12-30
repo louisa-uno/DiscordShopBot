@@ -1,5 +1,4 @@
 import discord
-from discord import message
 import mysql.connector
 import time
 import json
