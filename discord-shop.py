@@ -360,7 +360,7 @@ async def edit_item(reaction, user):
                 embed = discord.Embed(
                     title="What should be the new item image?",
                     description=
-                    "Please enter public URL to the image \nValid Files are png, jpg or gif. \n Enter a . for no image.",
+                    "Please enter public URL to the image or upload the image via Discord.\nValid Files are png, jpg or gif. \n Enter a . for no image.",
                     color=discord.Colour.from_rgb(255, 0, 0))
                 embed.add_field(name=f"Current image:",
                                 value=f"```{item_image}```",
@@ -370,7 +370,10 @@ async def edit_item(reaction, user):
                 await edit_item_channel.send(embed=embed)
                 item_image_message = await client.wait_for('message',
                                                            check=check)
-                new_item_image = item_image_message.content
+                try:
+                    new_item_image = item_image_message.attachments[0].url
+                except:
+                    new_item_image = item_image_message.content
                 if str(new_item_image) == ".":
                     item_image = new_item_image
                     break
@@ -893,11 +896,14 @@ async def additem_command(message):
         embed = discord.Embed(
             title="What should be the item image?",
             description=
-            "Please enter public URL to the image \nValid Files are png, jpg, jpeg or gif. \n Enter a . for no image.",
+            "Please enter public URL to the image or upload the image via Discord.\nValid Files are png, jpg, jpeg or gif. \n Enter a . for no image.",
             color=discord.Colour.from_rgb(255, 0, 0))
         await message.channel.send(embed=embed)
         item_image_message = await client.wait_for('message', check=check)
-        item_image = item_image_message.content
+        try:
+            item_image = item_image_message.attachments[0].url
+        except:
+            item_image = item_image_message.content
         if str(item_image) == ".":
             break
         elif validators.url(item_image) == True:
