@@ -83,8 +83,8 @@ async def on_raw_reaction_add(raw_reaction):
 
     if user != client.user:
         cart_cursor.execute(
-            f"SELECT EXISTS (SELECT * FROM items WHERE name = '{message.embeds[0].title}' AND channel_id = '{message.channel.id}')"
-        )
+            "SELECT EXISTS (SELECT * FROM items WHERE name = %s AND channel_id = %s)",
+            (message.embeds[0].title, message.channel.id))
         is_sell_message = cart_cursor.fetchall()
         if is_sell_message == [(1, )]:
             for reaction in message.reactions:
@@ -150,8 +150,8 @@ async def delete_item(reaction, user):
         return m.channel == edit_item_channel and m.author == guild_member
 
     cart_cursor.execute(
-        f"SELECT * FROM items WHERE name = '{item_name}' AND channel_id = '{reaction.message.channel.id}'"
-    )
+        "SELECT * FROM items WHERE name = %s AND channel_id = %s",
+        (item_name, reaction.message.channel.id))
     productinfo = cart_cursor.fetchall()[0]
     item_id = productinfo[0]
     item_name = productinfo[1]
@@ -193,7 +193,7 @@ async def delete_item(reaction, user):
             await edit_item_channel.send(embed=embed)
             time.sleep(2)
 
-            cart_cursor.execute(f"DELETE FROM items WHERE id = '{item_id}'")
+            cart_cursor.execute(f"DELETE FROM items WHERE id = {item_id}")
             cart_database.commit()
 
             await reaction.message.delete()
@@ -238,8 +238,8 @@ async def edit_item(reaction, user):
         return m.channel == edit_item_channel and m.author == guild_member
 
     cart_cursor.execute(
-        f"SELECT * FROM items WHERE name = '{item_name}' AND channel_id = '{reaction.message.channel.id}'"
-    )
+        "SELECT * FROM items WHERE name = %s AND channel_id = %s",
+        (item_name, reaction.message.channel.id))
     productinfo = cart_cursor.fetchall()[0]
     item_id = productinfo[0]
     item_name = productinfo[1]
@@ -304,8 +304,8 @@ async def edit_item(reaction, user):
                 new_item_name = item_name_message.content
                 if new_item_name != item_name:
                     cart_cursor.execute(
-                        f"SELECT * FROM items WHERE name = '{new_item_name}' AND channel_id = '{reaction.message.channel.id}'"
-                    )
+                        "SELECT * FROM items WHERE name = %s AND channel_id = %s",
+                        (new_item_name, reaction.message.channel.id))
                     if cart_cursor.fetchall() != []:
                         embed = discord.Embed(
                             title="You can't have 2 items with the same name.",
@@ -505,8 +505,9 @@ async def edit_item(reaction, user):
             await reaction.message.edit(embed=embed)
 
             cart_cursor.execute(
-                f"UPDATE items SET name = '{item_name}', description = '{item_description}', url = '{item_image}', price = '{item_price}', quantity = '{item_quantity_database}' WHERE id = '{item_id}'"
-            )
+                "UPDATE items SET name = %s, description = %s, url = %s, price = %s, quantity = %s WHERE id = %s",
+                (item_name, item_description, item_image, item_price,
+                 item_quantity_database, item_id))
             cart_database.commit()
             break
         elif edit_item_menu == "=cancel":
@@ -525,10 +526,10 @@ async def edit_item(reaction, user):
 
 async def cart_ticket(database_user, reaction, user):
     print(f"{user}")
-    cart_cursor.execute(f"SELECT EXISTS (SELECT * FROM `{database_user}`)")
+    cart_cursor.execute(f"SELECT EXISTS (SELECT * FROM {database_user})")
     cart_exists = cart_cursor.fetchall()
     if cart_exists == [(1, )]:
-        cart_cursor.execute(f"SELECT * FROM `{database_user}`")
+        cart_cursor.execute(f"SELECT * FROM {database_user}")
         products = cart_cursor.fetchall()
 
         guild_msg_id = int(database_user.split("_")[1], 36)
@@ -546,8 +547,7 @@ async def cart_ticket(database_user, reaction, user):
         productprices = ""
         total = 0
         for product in products:
-            cart_cursor.execute(
-                f"SELECT * FROM items WHERE id = '{product[0]}'")
+            cart_cursor.execute(f"SELECT * FROM items WHERE id = {product[0]}")
             productinfo = cart_cursor.fetchall()[0]
             productnames = productnames + productinfo[1] + "\n "
             productquantity = productquantity + product[1] + "\n "
@@ -597,20 +597,20 @@ async def delete_cart(reaction, database_user, user):
 
 def cart(database_user, cart_add_count, reaction):
     cart_cursor.execute(
-        f"SELECT `id`, `quantity` FROM items WHERE name = '{reaction.message.embeds[0].title}' AND channel_id = '{reaction.message.channel.id}'"
-    )
+        "SELECT `id`, `quantity` FROM items WHERE name = %s AND channel_id = %s",
+        (reaction.message.embeds[0].title, reaction.message.channel.id))
     productid = cart_cursor.fetchone()[0]
 
     cart_cursor.execute(
-        f"CREATE TABLE IF NOT EXISTS `{database_user}` (`id` varchar(255) DEFAULT NULL, `quantity` varchar(255) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+        f"CREATE TABLE IF NOT EXISTS {database_user} (`id` varchar(255) DEFAULT NULL, `quantity` varchar(255) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
     )
     cart_database.commit()
     cart_cursor.execute(
-        f"SELECT * FROM `{database_user}` WHERE id ='{productid}'")
+        f"SELECT * FROM {database_user} WHERE id = {productid}", )
     cart = cart_cursor.fetchall()
     if cart == []:
         cart_cursor.execute(
-            f"INSERT INTO `{database_user}` (`id`, `quantity`) VALUES ('{productid}', '{cart_add_count}')"
+            f"INSERT INTO {database_user} (`id`, `quantity`) VALUES ({productid}, {cart_add_count})"
         )
         cart_database.commit()
     else:
@@ -619,19 +619,19 @@ def cart(database_user, cart_add_count, reaction):
         new_cart_product_count = cart_product_count + cart_add_count
         if new_cart_product_count <= 0:
             cart_cursor.execute(
-                f"DELETE FROM `{database_user}` WHERE id = '{productid}'")
+                f"DELETE FROM {database_user} WHERE id = {productid}")
         else:
             cart_cursor.execute(
-                f"UPDATE `{database_user}` SET quantity = '{new_cart_product_count}' WHERE id = '{productid}'"
+                f"UPDATE {database_user} SET quantity = {new_cart_product_count} WHERE id = {productid}"
             )
         cart_database.commit()
 
 
 async def cart_message(database_user, reaction, user):
-    cart_cursor.execute(f"SELECT EXISTS (SELECT * FROM `{database_user}`)")
+    cart_cursor.execute(f"SELECT EXISTS (SELECT * FROM {database_user})")
     cart_exists = cart_cursor.fetchall()
     if cart_exists == [(1, )]:
-        cart_cursor.execute(f"SELECT * FROM `{database_user}`")
+        cart_cursor.execute(f"SELECT * FROM {database_user}")
         products = cart_cursor.fetchall()
 
         guild_msg_id = int(database_user.split("_")[1], 36)
@@ -651,15 +651,15 @@ async def cart_message(database_user, reaction, user):
         for product in products:
             try:
                 cart_cursor.execute(
-                    f"SELECT * FROM items WHERE id = '{product[0]}'")
+                    f"SELECT * FROM items WHERE id = {product[0]}")
                 productinfo = cart_cursor.fetchall()[0]
                 productnames = productnames + productinfo[1] + "\n "
                 productquantity = productquantity + product[1] + "\n "
                 productprices = productprices + productinfo[4] + "€" + "\n "
                 total = total + (int(product[1]) * float(productinfo[4]))
             except IndexError:
-                cart_cursor.execute(
-                    f"DELETE FROM `{database_user}` WHERE id={product[0]}")
+                cart_cursor.execute("DELETE FROM %s WHERE id = %s",
+                                    (database_user, product[0]))
                 print(
                     f"{user}: ❌ Deleted non-existing item of the items database"
                 )
@@ -854,8 +854,8 @@ async def additem_command(message):
         item_name = item_name_message.content
 
         cart_cursor.execute(
-            f"SELECT * FROM items WHERE name = '{item_name}' AND channel_id = '{mentioned_item_category_id}'"
-        )
+            "SELECT * FROM items WHERE name = %s AND channel_id = %s",
+            (item_name, mentioned_item_category_id))
         if cart_cursor.fetchall() != []:
             embed = discord.Embed(
                 title="You can't have 2 items with the same name.",
@@ -996,16 +996,17 @@ async def additem_command(message):
     await sent_item_message.add_reaction('❌')
 
     cart_cursor.execute(
-        f"INSERT INTO `items` (`name`, `description`, `url`, `price`, `quantity`, `channel_id`) VALUES ('{item_name}', '{item_description}','{item_image}', '{item_price}', '{item_quantity_database}', '{mentioned_item_category_id}')"
-    )
+        "INSERT INTO `items` (`name`, `description`, `url`, `price`, `quantity`, `channel_id`) VALUES (%s, %s, %s, %s, %s, %s)",
+        (item_name, item_description, item_image, item_price,
+         item_quantity_database, mentioned_item_category_id))
     cart_database.commit()
 
 
 async def add_command(message):
     member = message.author
     cart_cursor.execute(
-        f"select * from products WHERE channel = '{message.channel}' and enabled = 'true'"
-    )
+        "select * from products WHERE channel = %s and enabled = 'true'",
+        (message.channel))
     products = cart_cursor.fetchall()
     print(f"{member} created {cart_cursor.rowcount} products.")
 
