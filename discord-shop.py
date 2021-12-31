@@ -372,7 +372,7 @@ async def edit_item(reaction, user):
                                                            check=check)
                 try:
                     new_item_image = item_image_message.attachments[0].url
-                except:
+                except IndexError:
                     new_item_image = item_image_message.content
                 if str(new_item_image) == ".":
                     item_image = new_item_image
@@ -906,7 +906,7 @@ async def additem_command(message):
         item_image_message = await client.wait_for('message', check=check)
         try:
             item_image = item_image_message.attachments[0].url
-        except:
+        except IndexError:
             item_image = item_image_message.content
         if str(item_image) == ".":
             break
