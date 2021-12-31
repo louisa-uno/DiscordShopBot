@@ -641,8 +641,8 @@ async def cart_message(database_user, reaction, user):
         guild_ids = []
         for guild in client.guilds:
             guild_ids.append(guild.id)
-        id = guild_ids.index(guild_msg_id)
-        guild_msg = client.guilds[id]
+        temp_id = guild_ids.index(guild_msg_id)
+        guild_msg = client.guilds[temp_id]
 
         embed = discord.Embed(title=f"Your cart at {guild_msg}",
                               description="",
