@@ -10,8 +10,7 @@
 - #### 1. Click on the link and grant the bot admin permissions
 https://discord.com/api/oauth2/authorize?client_id=925539366540025917&permissions=8&scope=bot
 
-- #### 2. Type =setup into any text channel on your discord server for the bot to perform the setup itself
-- #### 3. Start to use the bot with =help
+- #### The instructions about the Usage are in the [Usage section](## Usage)
 
 ## Install the bot yourself
 
@@ -37,8 +36,9 @@ docker build -t discord-shop .
 - ##### 4.2 Upload the docker image to your server or run it on your local machine
 
 ## Usage
-#### You must have the "Support" role on your server in order to use the bot.
+#### You must have the "Seller" role on your server in order to use all features except the setup of the bot
 
+- #### =setup: Runs the automatic Setup
 - #### =help: Command Help
 - #### =clear: Delete all messages in a channel
 - #### =addcategory: Create a shop category
