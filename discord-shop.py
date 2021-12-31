@@ -705,7 +705,11 @@ def is_order(message):
 
 async def delete_messages(channel):
     deleted = await channel.purge(limit=10000, check=None)
-    await channel.send('Deleted {} message(s)'.format(len(deleted)))
+    message_count = len(deleted)
+    if message_count == 1:
+        await channel.send(f'Deleted {message_count} message')
+    else:
+        await channel.send(f'Deleted {message_count} messages')
 
 
 async def help_command(message):
