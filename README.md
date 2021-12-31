@@ -7,7 +7,7 @@
 
 ## Add the bot to your server
 
-- #### 1. Click on the link and add the bot with admin permissions to your server
+- #### 1. Click on the link and add the bot with admin permissions to your Discord server
 https://discord.com/api/oauth2/authorize?client_id=925539366540025917&permissions=8&scope=bot
 
 - #### The instructions about the Usage are in the [Usage section](#usage)
