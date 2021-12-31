@@ -10,7 +10,7 @@
 - #### 1. Click on the link and grant the bot admin permissions
 https://discord.com/api/oauth2/authorize?client_id=925539366540025917&permissions=8&scope=bot
 
-- #### The instructions about the Usage are in the [Usage section](## Usage)
+- #### The instructions about the Usage are in the [Usage section](#usage)
 
 ## Install the bot yourself
 
@@ -35,6 +35,7 @@ docker build -t discord-shop .
 ```
 - ##### 4.2 Upload the docker image to your server or run it on your local machine
 
+<a name="usage"></a>
 ## Usage
 #### You must have the "Seller" role on your server in order to use all features except the setup of the bot
 
