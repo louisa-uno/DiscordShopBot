@@ -214,7 +214,7 @@ async def edit_item(reaction, user):
     guild_member = await guild.fetch_member(user.id)
 
     role_names = [role.name for role in guild_member.roles]
-    if not "Seller" in role_names:
+    if "Seller" not in role_names:
         return
 
     item_name = reaction.message.embeds[0].title
