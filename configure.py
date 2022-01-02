@@ -1,11 +1,12 @@
 import json
+import sys
 import mysql.connector
 import discord
-import sys
+
 
 client = discord.Client()
 
-with open("config.json") as f:
+with open("default-config.json") as f:
     config = json.load(f)
     config_mysql = config["mysql"]
     config_discord = config["discord"]
@@ -48,7 +49,7 @@ while True:
             test_mysql.close()
             print("mysql: Connection is working")
         except mysql.connector.Error as err:
-            print("mysql: Something went wrong: {}".format(err))
+            print(f"mysql: Something went wrong: {err}")
         client.run(config_discord["bot_token"])
     elif option == "3":
         print(("Do you want to save before exiting? [y/n]"))
