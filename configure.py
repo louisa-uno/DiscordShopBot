@@ -55,7 +55,7 @@ while True:
         option = input()
         if option == "y" or "yes":
             break
-        elif option == "n" or "no":
+        if option == "n" or "no":
             sys.exit()
         else:
             print("You entered a invalid option.")
