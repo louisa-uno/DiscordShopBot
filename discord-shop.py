@@ -1043,7 +1043,6 @@ async def add_command(message):
 
 @client.event
 async def on_message(message):
-    message = message
     if message.author != client.user and message.guild is not None:
         role_names = [role.name for role in message.author.roles]
         if message.content.startswith("=setup"):
