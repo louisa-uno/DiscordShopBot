@@ -281,9 +281,7 @@ async def edit_item(reaction, user):
         embed.add_field(name="Cancel editing",
                         value="Usage: =cancel",
                         inline=True)
-        embed.add_field(name="Save changes",
-                        value="Usage: =save",
-                        inline=True)
+        embed.add_field(name="Save changes", value="Usage: =save", inline=True)
         #embed.add_field(name = f"DISABLED: Edit category", value = "Usage: =category", inline = True)
         await edit_item_channel.send(embed=embed, content=f"<@{user.id}>")
 
@@ -389,8 +387,7 @@ async def edit_item(reaction, user):
                             item_image = new_item_image
                             break
                         embed = discord.Embed(
-                            title=
-                            "The image url isn't the right file format.",
+                            title="The image url isn't the right file format.",
                             description="",
                             color=discord.Colour.from_rgb(255, 0, 0))
                         await edit_item_channel.send(embed=embed)
@@ -469,8 +466,7 @@ async def edit_item(reaction, user):
                         item_quantity_database = new_item_quantity_database
                         break
                     embed = discord.Embed(
-                        title=
-                        "The item quantity can't be below -1(Unlimited).",
+                        title="The item quantity can't be below -1(Unlimited).",
                         description="",
                         color=discord.Colour.from_rgb(255, 0, 0))
                     await edit_item_channel.send(embed=embed)
@@ -725,9 +721,7 @@ async def help_command(message):
     embed.add_field(name="Create a shop channel",
                     value="Usage: =addchannel",
                     inline=True)
-    embed.add_field(name="Create a item",
-                    value="Usage: =additem",
-                    inline=True)
+    embed.add_field(name="Create a item", value="Usage: =additem", inline=True)
     # embed.add_field(name = f"DISABLED: Recreate all items", value = "Usage: =add", inline = True)
     embed.add_field(name="React with a ✏️ to a item to edit it.",
                     value="Usage: Reaction ✏️",
