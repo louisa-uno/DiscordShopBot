@@ -1,6 +1,7 @@
 import json
 import mysql.connector
 import discord
+import sys
 
 client = discord.Client()
 
@@ -55,7 +56,7 @@ while True:
         if option == "y" or "yes":
             break
         elif option == "n" or "no":
-            exit()
+            sys.exit()
         else:
             print("You entered a invalid option.")
 
