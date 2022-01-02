@@ -2,10 +2,15 @@ import json
 import sys
 import mysql.connector
 import discord
+import os.path
+from shutil import copyfile
 
 client = discord.Client()
 
-with open("default-config.json") as f:
+if not os.path.isfile("config.json"):
+    copyfile("default-config.json", "config.json")
+
+with open("config.json") as f:
     config = json.load(f)
     config_mysql = config["mysql"]
     config_discord = config["discord"]
