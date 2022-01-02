@@ -3,7 +3,6 @@ import sys
 import mysql.connector
 import discord
 
-
 client = discord.Client()
 
 with open("default-config.json") as f:
