@@ -199,7 +199,7 @@ async def delete_item(reaction, user):
             await reaction.message.delete()
             await edit_item_channel.delete()
             break
-        elif edit_item_menu == "no":
+        if edit_item_menu == "no":
             embed = discord.Embed(title="Cancelling ...",
                                   description="",
                                   color=discord.Colour.from_rgb(255, 0, 0))
@@ -377,7 +377,7 @@ async def edit_item(reaction, user):
                 if str(new_item_image) == ".":
                     item_image = new_item_image
                     break
-                elif validators.url(new_item_image) is True:
+                if validators.url(new_item_image) is True:
                     if len(new_item_image) > 1024:
                         embed = discord.Embed(
                             title="The maximum length is 1024 characters.",
@@ -388,13 +388,12 @@ async def edit_item(reaction, user):
                         if is_url_image(new_item_image) is True:
                             item_image = new_item_image
                             break
-                        else:
-                            embed = discord.Embed(
-                                title=
-                                "The image url isn't the right file format.",
-                                description="",
-                                color=discord.Colour.from_rgb(255, 0, 0))
-                            await edit_item_channel.send(embed=embed)
+                        embed = discord.Embed(
+                            title=
+                            "The image url isn't the right file format.",
+                            description="",
+                            color=discord.Colour.from_rgb(255, 0, 0))
+                        await edit_item_channel.send(embed=embed)
                 else:
                     embed = discord.Embed(
                         title="The image url is not public or not existing.",
@@ -423,7 +422,7 @@ async def edit_item(reaction, user):
                     if new_item_price > 0:
                         item_price = new_item_price
                         break
-                    elif new_item_price == 0:
+                    if new_item_price == 0:
                         embed = discord.Embed(
                             title="The item price can't be zero.",
                             description="",
@@ -465,17 +464,16 @@ async def edit_item(reaction, user):
                         item_quantity = new_item_quantity_database
                         item_quantity_database = new_item_quantity_database
                         break
-                    elif new_item_quantity_database == -1:
+                    if new_item_quantity_database == -1:
                         item_quantity = "Unlimited"
                         item_quantity_database = new_item_quantity_database
                         break
-                    else:
-                        embed = discord.Embed(
-                            title=
-                            "The item quantity can't be below -1(Unlimited).",
-                            description="",
-                            color=discord.Colour.from_rgb(255, 0, 0))
-                        await edit_item_channel.send(embed=embed)
+                    embed = discord.Embed(
+                        title=
+                        "The item quantity can't be below -1(Unlimited).",
+                        description="",
+                        color=discord.Colour.from_rgb(255, 0, 0))
+                    await edit_item_channel.send(embed=embed)
                 except ValueError:
                     embed = discord.Embed(
                         title="Please enter a valid quantity.",
@@ -796,11 +794,10 @@ async def addchannel_command(message):
                 new_category = category
         if "new_category" in locals():
             break
-        else:
-            embed = discord.Embed(title="Please enter a valid category.",
-                                  description="",
-                                  color=discord.Colour.from_rgb(255, 0, 0))
-            await message.channel.send(embed=embed)
+        embed = discord.Embed(title="Please enter a valid category.",
+                              description="",
+                              color=discord.Colour.from_rgb(255, 0, 0))
+        await message.channel.send(embed=embed)
 
     embed = discord.Embed(title="What should be the channel name?",
                           description="",
@@ -910,7 +907,7 @@ async def additem_command(message):
             item_image = item_image_message.content
         if str(item_image) == ".":
             break
-        elif validators.url(item_image) is True:
+        if validators.url(item_image) is True:
             if len(item_image) > 2048:
                 embed = discord.Embed(
                     title="The maximum length is 2048 characters.",
@@ -920,12 +917,11 @@ async def additem_command(message):
             else:
                 if is_url_image(item_image) is True:
                     break
-                else:
-                    embed = discord.Embed(
-                        title="The image url isn't the right file format.",
-                        description="",
-                        color=discord.Colour.from_rgb(255, 0, 0))
-                    await message.channel.send(embed=embed)
+                embed = discord.Embed(
+                    title="The image url isn't the right file format.",
+                    description="",
+                    color=discord.Colour.from_rgb(255, 0, 0))
+                await message.channel.send(embed=embed)
         else:
             embed = discord.Embed(
                 title="The image url is not public or not existing.",
@@ -945,7 +941,7 @@ async def additem_command(message):
             item_price = round(float(item_price), 2)
             if item_price > 0:
                 break
-            elif item_price == 0:
+            if item_price == 0:
                 embed = discord.Embed(title="The item price can't be zero.",
                                       description="",
                                       color=discord.Colour.from_rgb(255, 0, 0))
@@ -975,15 +971,14 @@ async def additem_command(message):
             if item_quantity_database > -1:
                 item_quantity = item_quantity_database
                 break
-            elif item_quantity_database == -1:
+            if item_quantity_database == -1:
                 item_quantity = "Unlimited"
                 break
-            else:
-                embed = discord.Embed(
-                    title="The item quantity can't be below -1(Unlimited).",
-                    description="",
-                    color=discord.Colour.from_rgb(255, 0, 0))
-                await message.channel.send(embed=embed)
+            embed = discord.Embed(
+                title="The item quantity can't be below -1(Unlimited).",
+                description="",
+                color=discord.Colour.from_rgb(255, 0, 0))
+            await message.channel.send(embed=embed)
         except ValueError:
             embed = discord.Embed(title="Please enter a valid quantity.",
                                   description="",
