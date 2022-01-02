@@ -23,7 +23,7 @@ cart_database = test_mysql = mysql.connector.connect(
 print(f"MySQL: Logged in as {cart_database.user}")
 cart_cursor = cart_database.cursor(buffered=True)
 cart_cursor.execute(
-    f"CREATE TABLE IF NOT EXISTS `items` (`id` int NOT NULL AUTO_INCREMENT PRIMARY KEY, `name` varchar(256) DEFAULT NULL, `description` varchar(1024) DEFAULT NULL, `url` varchar(1024) DEFAULT NULL, `price` varchar(255) DEFAULT NULL, `quantity` varchar(255) DEFAULT NULL, `channel_id` varchar(255) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+    "CREATE TABLE IF NOT EXISTS `items` (`id` int NOT NULL AUTO_INCREMENT PRIMARY KEY, `name` varchar(256) DEFAULT NULL, `description` varchar(1024) DEFAULT NULL, `url` varchar(1024) DEFAULT NULL, `price` varchar(255) DEFAULT NULL, `quantity` varchar(255) DEFAULT NULL, `channel_id` varchar(255) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
 )
 cart_database.commit()
 
@@ -59,7 +59,7 @@ async def start_setup(message):
                           description="",
                           color=discord.Colour.from_rgb(255, 0, 0))
     embed.add_field(
-        name=f"Developer",
+        name="Developer",
         value=
         "Louis_45#0553 | [GitHub](https://github.com/Luois45)\ndiscord-shop@louis45.de",
         inline=True)
@@ -269,19 +269,19 @@ async def edit_item(reaction, user):
         embed = discord.Embed(title="How to edit:",
                               description="",
                               color=discord.Colour.from_rgb(255, 0, 0))
-        embed.add_field(name=f"Edit name", value="Usage: =name", inline=True)
-        embed.add_field(name=f"Edit description",
+        embed.add_field(name="Edit name", value="Usage: =name", inline=True)
+        embed.add_field(name="Edit description",
                         value="Usage: =description",
                         inline=True)
-        embed.add_field(name=f"Edit image", value="Usage: =image", inline=True)
-        embed.add_field(name=f"Edit price", value="Usage: =price", inline=True)
-        embed.add_field(name=f"Edit quantity",
+        embed.add_field(name="Edit image", value="Usage: =image", inline=True)
+        embed.add_field(name="Edit price", value="Usage: =price", inline=True)
+        embed.add_field(name="Edit quantity",
                         value="Usage: =quantity",
                         inline=True)
-        embed.add_field(name=f"Cancel editing",
+        embed.add_field(name="Cancel editing",
                         value="Usage: =cancel",
                         inline=True)
-        embed.add_field(name=f"Save changes",
+        embed.add_field(name="Save changes",
                         value="Usage: =save",
                         inline=True)
         #embed.add_field(name = f"DISABLED: Edit category", value = "Usage: =category", inline = True)
@@ -295,7 +295,7 @@ async def edit_item(reaction, user):
                 embed = discord.Embed(title="What should be the item name?",
                                       description="",
                                       color=discord.Colour.from_rgb(255, 0, 0))
-                embed.add_field(name=f"Current name:",
+                embed.add_field(name="Current name:",
                                 value=f"```{item_name}```",
                                 inline=True)
                 await edit_item_channel.send(embed=embed)
@@ -335,7 +335,7 @@ async def edit_item(reaction, user):
                     title="What should be the item description?",
                     description="Enter . for no description.",
                     color=discord.Colour.from_rgb(255, 0, 0))
-                embed.add_field(name=f"Current description:",
+                embed.add_field(name="Current description:",
                                 value=f"```{item_description}```",
                                 inline=True)
                 await edit_item_channel.send(embed=embed)
@@ -362,7 +362,7 @@ async def edit_item(reaction, user):
                     description=
                     "Please enter public URL to the image or upload the image via Discord.\nValid Files are png, jpg or gif. \n Enter a . for no image.",
                     color=discord.Colour.from_rgb(255, 0, 0))
-                embed.add_field(name=f"Current image:",
+                embed.add_field(name="Current image:",
                                 value=f"```{item_image}```",
                                 inline=True)
                 if str(item_image) != "." and "None":
@@ -410,7 +410,7 @@ async def edit_item(reaction, user):
                     title="What should be the item price?",
                     description="Please enter the price like this: 0.1",
                     color=discord.Colour.from_rgb(255, 0, 0))
-                embed.add_field(name=f"Current price:",
+                embed.add_field(name="Current price:",
                                 value=f"```{item_price}```",
                                 inline=True)
                 await edit_item_channel.send(embed=embed)
@@ -450,7 +450,7 @@ async def edit_item(reaction, user):
                     title="What should be the item quantity?",
                     description="0 means out of stock \n-1 means unlimited",
                     color=discord.Colour.from_rgb(255, 0, 0))
-                embed.add_field(name=f"Current quantity:",
+                embed.add_field(name="Current quantity:",
                                 value=f"```{item_quantity}```",
                                 inline=True)
                 await edit_item_channel.send(embed=embed)
@@ -562,7 +562,7 @@ async def cart_ticket(database_user, reaction, user):
         embed.add_field(
             name=
             f"Total: {round(total, 2)}€ | With PayPal fees: {round(paypaltotal, 2)}€",
-            value=f"(Maybe this message won't display well on mobile devices)",
+            value="(Maybe this message won't display well on mobile devices)",
             inline=True)
 
         await delete_cart(reaction, database_user, user)
@@ -715,25 +715,25 @@ async def help_command(message):
                           description="",
                           color=discord.Colour.from_rgb(255, 0, 0))
 
-    embed.add_field(name=f"Command Help", value="Usage: =help", inline=True)
-    embed.add_field(name=f"Delete all messages in a channel",
+    embed.add_field(name="Command Help", value="Usage: =help", inline=True)
+    embed.add_field(name="Delete all messages in a channel",
                     value="Usage: =clear",
                     inline=True)
-    embed.add_field(name=f"Create a shop category",
+    embed.add_field(name="Create a shop category",
                     value="Usage: =addcategory",
                     inline=True)
-    embed.add_field(name=f"Create a shop channel",
+    embed.add_field(name="Create a shop channel",
                     value="Usage: =addchannel",
                     inline=True)
-    embed.add_field(name=f"Create a item",
+    embed.add_field(name="Create a item",
                     value="Usage: =additem",
                     inline=True)
     # embed.add_field(name = f"DISABLED: Recreate all items", value = "Usage: =add", inline = True)
-    embed.add_field(name=f"React with a ✏️ to a item to edit it.",
+    embed.add_field(name="React with a ✏️ to a item to edit it.",
                     value="Usage: Reaction ✏️",
                     inline=True)
     embed.add_field(
-        name=f"Developer",
+        name="Developer",
         value=
         "Louis_45#0553 | [GitHub](https://github.com/Luois45)\ndiscord-shop@louis45.de",
         inline=True)
@@ -992,7 +992,7 @@ async def additem_command(message):
     embed.add_field(name=f"Price: {item_price}€",
                     value=item_description,
                     inline=True)
-    embed.add_field(name=f"Quantity: {item_quantity}", value=f".", inline=True)
+    embed.add_field(name=f"Quantity: {item_quantity}", value=".", inline=True)
     if str(item_image) != ".":
         embed.set_image(url=item_image)
 
