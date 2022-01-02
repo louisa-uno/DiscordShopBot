@@ -47,13 +47,13 @@ async def start_setup(message):
         for role in guild.roles:
             if "Seller" in role.name:
                 roleExists = True
-        if roleExists == False:
+        if roleExists is False:
             await guild.create_role(name="Seller",
                                     reason="Is necessary for DiscordShopBot")
         for category in guild.categories:
             if "orders" in category.name:
                 categoryExists = True
-        if categoryExists == False:
+        if categoryExists is False:
             await guild.create_category("orders")
     embed = discord.Embed(title="Performed setup sucessfully",
                           description="",
@@ -377,7 +377,7 @@ async def edit_item(reaction, user):
                 if str(new_item_image) == ".":
                     item_image = new_item_image
                     break
-                elif validators.url(new_item_image) == True:
+                elif validators.url(new_item_image) is True:
                     if len(new_item_image) > 1024:
                         embed = discord.Embed(
                             title="The maximum length is 1024 characters.",
@@ -385,7 +385,7 @@ async def edit_item(reaction, user):
                             color=discord.Colour.from_rgb(255, 0, 0))
                         await edit_item_channel.send(embed=embed)
                     else:
-                        if is_url_image(new_item_image) == True:
+                        if is_url_image(new_item_image) is True:
                             item_image = new_item_image
                             break
                         else:
@@ -680,7 +680,7 @@ async def cart_message(database_user, reaction, user):
         cart_message = await DMChannel.history().find(
             lambda m: database_user.split("_")[1] in m.embeds[0].fields[
                 3].value)
-        if cart_message == None:
+        if cart_message is None:
             sent_cart_message = await DMChannel.send(embed=embed)
             await sent_cart_message.add_reaction('💰')
             await sent_cart_message.add_reaction('🗑️')
@@ -910,7 +910,7 @@ async def additem_command(message):
             item_image = item_image_message.content
         if str(item_image) == ".":
             break
-        elif validators.url(item_image) == True:
+        elif validators.url(item_image) is True:
             if len(item_image) > 2048:
                 embed = discord.Embed(
                     title="The maximum length is 2048 characters.",
@@ -918,7 +918,7 @@ async def additem_command(message):
                     color=discord.Colour.from_rgb(255, 0, 0))
                 await message.channel.send(embed=embed)
             else:
-                if is_url_image(item_image) == True:
+                if is_url_image(item_image) is True:
                     break
                 else:
                     embed = discord.Embed(
@@ -1049,7 +1049,7 @@ async def add_command(message):
 @client.event
 async def on_message(message):
     message = message
-    if message.author != client.user and message.guild != None:
+    if message.author != client.user and message.guild is not None:
         role_names = [role.name for role in message.author.roles]
         if message.content.startswith("=setup"):
             await start_setup(message)
