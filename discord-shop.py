@@ -112,7 +112,7 @@ async def on_raw_reaction_add(raw_reaction):
                         await cart_ticket(database_user, reaction, user)
                     elif reaction.emoji == "🗑️":
                         print(f"{user}: 🗑️  Emptied cart")
-                        await delete_cart(reaction, database_user, user)
+                        await delete_cart(reaction, database_user)
         elif is_order(message):
             for reaction in message.reactions:
                 if reaction.count >= 2:
