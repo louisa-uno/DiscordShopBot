@@ -561,7 +561,7 @@ async def cart_ticket(database_user, reaction, user):
             value="(Maybe this message won't display well on mobile devices)",
             inline=True)
 
-        await delete_cart(reaction, database_user, user)
+        await delete_cart(reaction, database_user)
 
         cart_cursor.execute(f"DROP TABLE IF EXISTS `{database_user}`")
         cart_database.commit()
@@ -586,7 +586,7 @@ async def cart_ticket(database_user, reaction, user):
         await sent_ticket_message.add_reaction('🗑️')
 
 
-async def delete_cart(reaction, database_user, user):
+async def delete_cart(reaction, database_user):
     cart_cursor.execute(f"DROP TABLE IF EXISTS `{database_user}`")
     cart_database.commit()
     await reaction.message.delete()
