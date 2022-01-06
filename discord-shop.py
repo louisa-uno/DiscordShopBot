@@ -55,7 +55,7 @@ async def start_setup(message):
                 categoryExists = True
         if categoryExists is False:
             await guild.create_category("orders")
-    embed = discord.Embed(title="Performed setup sucessfully",
+    embed = discord.Embed(title="Performed setup successfully",
                           description="",
                           color=discord.Colour.from_rgb(255, 0, 0))
     embed.add_field(
