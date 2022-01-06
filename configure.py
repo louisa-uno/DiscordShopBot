@@ -1,9 +1,10 @@
 import json
-import sys
-import mysql.connector
-import discord
 import os.path
+import sys
 from shutil import copyfile
+
+import discord
+import mysql.connector
 
 client = discord.Client()
 
