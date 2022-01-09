@@ -54,7 +54,6 @@ async def start_setup(message) -> None:
 	Args:
 		message: the message which ran the setup process
 	"""
-    # Performs the setup of the bot
     for guild in client.guilds:
         roleExists = False
         categoryExists = False
@@ -313,7 +312,6 @@ async def edit_item(reaction, user) -> None:
                         value="Usage: =cancel",
                         inline=True)
         embed.add_field(name="Save changes", value="Usage: =save", inline=True)
-        #embed.add_field(name = f"DISABLED: Edit category", value = "Usage: =category", inline = True)
         await edit_item_channel.send(embed=embed, content=f"<@{user.id}>")
 
         edit_item_menu_message = await client.wait_for('message', check=check)
@@ -806,7 +804,6 @@ async def help_command(message) -> None:
                     value="Usage: =addchannel",
                     inline=True)
     embed.add_field(name="Create a item", value="Usage: =additem", inline=True)
-    # embed.add_field(name = f"DISABLED: Recreate all items", value = "Usage: =add", inline = True)
     embed.add_field(name="React with a ✏️ to a item to edit it.",
                     value="Usage: Reaction ✏️",
                     inline=True)
