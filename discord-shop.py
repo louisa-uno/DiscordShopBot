@@ -135,10 +135,9 @@ async def on_raw_reaction_add(raw_reaction) -> None:
                         await delete_cart(reaction, database_user)
         elif is_order(message):
             for reaction in message.reactions:
-                if reaction.count >= 2:
-                    if reaction.emoji == "🗑️":
-                        print(f"{user}: 🗑️  Cancelled checkout")
-                        await message.channel.delete()
+                if reaction.count >= 2 and reaction.emoji == "🗑️":
+                    print(f"{user}: 🗑️  Cancelled checkout")
+                    await message.channel.delete()
 
 
 async def delete_item(reaction, user) -> None:
