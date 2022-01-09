@@ -6,4 +6,4 @@ WORKDIR /app
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-CMD python ./discord-shop.py
+CMD [ "python", "./discord-shop.py" ]
