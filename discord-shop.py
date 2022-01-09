@@ -639,7 +639,7 @@ def cart(database_user, cart_add_count, reaction) -> None:
 
 	Args:
 		database_user: the database user which added the reaction
-		cart_add_count int: a positive or negative number of items to add or remove from the cart
+		cart_add_count int: positive or negative int of items to add or remove from the cart
 		reaction: the reaction which was added to the item message
 	"""
 	cart_cursor.execute(
@@ -678,7 +678,7 @@ async def cart_message(database_user, reaction, user) -> None:
 
 	Args:
 		database_user str: the database user which added the reaction
-		cart_add_count int: a positive or negative number of items to add or remove from the cart
+		cart_add_count int: positive or negative int of items to add or remove from the cart
 		reaction: the reaction which was added to the item message
 	"""
 	cart_cursor.execute(f"SELECT EXISTS (SELECT * FROM {database_user})")
