@@ -28,7 +28,7 @@ cart_cursor.execute(
 cart_database.commit()
 
 
-async def get_database_user(user, reaction):
+async def get_database_user(user, reaction) -> str:
     """Returns the username of the discord user which corresponds to the database table.
 
     Args:
@@ -48,7 +48,7 @@ async def get_database_user(user, reaction):
     return database_user
 
 
-async def start_setup(message):
+async def start_setup(message) -> None:
     """Performs the automatic setup.
 
     Args:
@@ -82,7 +82,7 @@ async def start_setup(message):
 
 
 @client.event
-async def on_ready():
+async def on_ready() -> None:
     """Is ran when the bot is ready and sets changes the presence of the bot.
     """
     print("Discord: Logged in as {0.user}".format(client))
@@ -91,7 +91,7 @@ async def on_ready():
 
 
 @client.event
-async def on_raw_reaction_add(raw_reaction):
+async def on_raw_reaction_add(raw_reaction) -> None:
     """Is ran when a reaction is added to a message of the bot.
 
     Args:
@@ -141,7 +141,7 @@ async def on_raw_reaction_add(raw_reaction):
                         await message.channel.delete()
 
 
-async def delete_item(reaction, user):
+async def delete_item(reaction, user) -> None:
     """Deletes a item from the chat and database.
 
     Args:
@@ -172,7 +172,7 @@ async def delete_item(reaction, user):
                                             read_messages=True,
                                             send_messages=True)
 
-    def check(m):
+    def check(m) -> bool:
         return m.channel == edit_item_channel and m.author == guild_member
 
     cart_cursor.execute(
@@ -235,7 +235,7 @@ async def delete_item(reaction, user):
             break
 
 
-async def edit_item(reaction, user):
+async def edit_item(reaction, user) -> None:
     """Edits an item.
 
     Args:
@@ -266,7 +266,7 @@ async def edit_item(reaction, user):
                                             read_messages=True,
                                             send_messages=True)
 
-    def check(m):
+    def check(m) -> bool:
         return m.channel == edit_item_channel and m.author == guild_member
 
     cart_cursor.execute(
@@ -553,7 +553,7 @@ async def edit_item(reaction, user):
             await edit_item_channel.send(embed=embed)
 
 
-async def cart_ticket(database_user, reaction, user):
+async def cart_ticket(database_user, reaction, user) -> None:
     """Creates the cart ticket.
 
     Args:
@@ -625,7 +625,7 @@ async def cart_ticket(database_user, reaction, user):
         await sent_ticket_message.add_reaction('🗑️')
 
 
-async def delete_cart(reaction, database_user):
+async def delete_cart(reaction, database_user) -> None:
     """Deletes the cart from the chat between the user and the bot.
 
     Args:
@@ -637,7 +637,7 @@ async def delete_cart(reaction, database_user):
     await reaction.message.delete()
 
 
-def cart(database_user, cart_add_count, reaction):
+def cart(database_user, cart_add_count, reaction) -> None:
     """Creates or updates the cart database for the database user
 
     Args:
@@ -676,7 +676,7 @@ def cart(database_user, cart_add_count, reaction):
         cart_database.commit()
 
 
-async def cart_message(database_user, reaction, user):
+async def cart_message(database_user, reaction, user) -> None:
     """Sends or updates the cart message in the chat between the user and the bot
 
     Args:
@@ -741,7 +741,7 @@ async def cart_message(database_user, reaction, user):
             await cart_message.edit(embed=embed)
 
 
-async def delete_dm(user):
+async def delete_dm(user) -> None:
     """Deletes a direct message between the user and the bot
 
     Args:
@@ -753,7 +753,7 @@ async def delete_dm(user):
             await message.delete()
 
 
-def is_cart(message):
+def is_cart(message) -> bool:
     """Checks if the message is a cart message
 
     Args:
@@ -765,7 +765,7 @@ def is_cart(message):
     return "Your cart at " in message.embeds[0].title
 
 
-def is_order(message):
+def is_order(message) -> bool:
     """Checks if the message is a order message
 
     Args:
@@ -777,7 +777,7 @@ def is_order(message):
     return "Your order at " in message.embeds[0].title
 
 
-async def delete_messages(channel):
+async def delete_messages(channel) -> None:
     deleted = await channel.purge(limit=10000, check=None)
     message_count = len(deleted)
     if message_count == 1:
@@ -786,7 +786,7 @@ async def delete_messages(channel):
         await channel.send(f'Deleted {message_count} messages')
 
 
-async def help_command(message):
+async def help_command(message) -> None:
     """Generates the help message on the help command
 
     Args:
@@ -820,7 +820,7 @@ async def help_command(message):
     await message.channel.send(embed=embed)
 
 
-async def addcategory_command(message):
+async def addcategory_command(message) -> None:
     """Creates a category
 
     Args:
@@ -835,7 +835,7 @@ async def addcategory_command(message):
                           color=discord.Colour.from_rgb(255, 0, 0))
     await message.channel.send(embed=embed)
 
-    def check(m):
+    def check(m) -> bool:
         return m.channel == channel and m.author == author
 
     category = await client.wait_for('message', check=check)
@@ -856,7 +856,7 @@ async def addcategory_command(message):
                                            send_messages=True)
 
 
-async def addchannel_command(message):
+async def addchannel_command(message) -> None:
     """Creates a channel
 
     Args:
@@ -867,7 +867,7 @@ async def addchannel_command(message):
     author = message.author
     categories = message.guild.categories
 
-    def check(m):
+    def check(m) -> bool:
         return m.channel == channel and m.author == author
 
     while True:
@@ -903,7 +903,7 @@ async def addchannel_command(message):
     await guild.create_text_channel(channel_name, category=new_category)
 
 
-def is_url_image(image_url):
+def is_url_image(image_url) -> bool:
     """Checks if a url does contain an image.
 
     Args:
@@ -919,7 +919,7 @@ def is_url_image(image_url):
     return False
 
 
-async def additem_command(message):
+async def additem_command(message) -> None:
     """Adds an item to the guild.
 
     Args:
@@ -928,7 +928,7 @@ async def additem_command(message):
     channel = message.channel
     author = message.author
 
-    def check(m):
+    def check(m) -> bool:
         return m.channel == channel and m.author == author
 
     while True:
@@ -1110,7 +1110,7 @@ async def additem_command(message):
 
 
 @client.event
-async def on_message(message):
+async def on_message(message) -> None:
     """Is ran when the bot receives a message
 
     Args:
