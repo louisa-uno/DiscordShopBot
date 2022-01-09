@@ -1,0 +1,9 @@
+version: '3.7'
+services:
+  skinbaron-bot:
+    image: discordshopbot:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        max_attempts: 0
