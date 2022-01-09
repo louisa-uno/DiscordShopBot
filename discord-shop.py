@@ -1109,40 +1109,6 @@ async def additem_command(message):
     cart_database.commit()
 
 
-async def add_command(message):
-    member = message.author
-    cart_cursor.execute(
-        "select * from products WHERE channel = %s and enabled = 'true'",
-        (message.channel))
-    products = cart_cursor.fetchall()
-    print(f"{member} created {cart_cursor.rowcount} products.")
-
-    if products != []:
-        await message.channel.purge(limit=100, check=None)
-
-    description = ""
-
-    for product in products:
-        title = product[3]
-        price = product[4]
-        quantity = product[6]
-        url = product[7]
-        description = product[8]
-        if str(description) == "None":
-            description = "."
-
-        embed = discord.Embed(title=title,
-                              description="",
-                              color=discord.Colour.from_rgb(255, 0, 0))
-
-        embed.add_field(name=f"Price: {price}", value=description, inline=True)
-        embed.add_field(name=f"Quantity: {quantity}", value=".", inline=True)
-        if str(url) != "None":
-            embed.set_image(url=url)
-
-        await message.channel.send(embed=embed)
-
-
 @client.event
 async def on_message(message):
     """Is ran when the bot receives a message
@@ -1167,9 +1133,6 @@ async def on_message(message):
                 await help_command(message)
             elif message.content.startswith("=additem"):
                 await additem_command(message)
-                await help_command(message)
-            elif message.content.startswith("=add"):
-                await add_command(message)
                 await help_command(message)
 
 
