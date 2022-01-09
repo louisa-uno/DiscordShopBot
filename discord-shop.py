@@ -82,8 +82,7 @@ async def start_setup(message) -> None:
 
 @client.event
 async def on_ready() -> None:
-	"""Is ran when the bot is ready and sets changes the presence of the bot.
-	"""
+	"""Is ran when the bot is ready and sets changes the presence of the bot."""
 	print("Discord: Logged in as {0.user}".format(client))
 	await client.change_presence(activity=discord.Activity(
 	    type=discord.ActivityType.playing, name="DiscordShopBot"))
