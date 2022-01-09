@@ -31,13 +31,13 @@ cart_database.commit()
 async def get_database_user(user, reaction) -> str:
     """Returns the username of the discord user which corresponds to the database table.
 
-    Args:
-        user: the user on the server
-        reaction: the reaction on the server
+	Args:
+		user: the user on the server
+		reaction: the reaction on the server
 
-    Returns:
-        str: username which corresponds to the database table
-    """
+	Returns:
+		str: username which corresponds to the database table
+	"""
     try:
         guild_id = base_repr(reaction.message.guild.id, 36)
     except AttributeError:
@@ -51,9 +51,9 @@ async def get_database_user(user, reaction) -> str:
 async def start_setup(message) -> None:
     """Performs the automatic setup.
 
-    Args:
-        message: the message which ran the setup process
-    """
+	Args:
+		message: the message which ran the setup process
+	"""
     # Performs the setup of the bot
     for guild in client.guilds:
         roleExists = False
@@ -84,7 +84,7 @@ async def start_setup(message) -> None:
 @client.event
 async def on_ready() -> None:
     """Is ran when the bot is ready and sets changes the presence of the bot.
-    """
+	"""
     print("Discord: Logged in as {0.user}".format(client))
     await client.change_presence(activity=discord.Activity(
         type=discord.ActivityType.playing, name="DiscordShopBot"))
@@ -94,9 +94,9 @@ async def on_ready() -> None:
 async def on_raw_reaction_add(raw_reaction) -> None:
     """Is ran when a reaction is added to a message of the bot.
 
-    Args:
-        raw_reaction: the reaction which has been added to the message
-    """
+	Args:
+		raw_reaction: the reaction which has been added to the message
+	"""
     channel = await client.fetch_channel(raw_reaction.channel_id)
     message = await channel.fetch_message(raw_reaction.message_id)
     user = await client.fetch_user(raw_reaction.user_id)
@@ -143,10 +143,10 @@ async def on_raw_reaction_add(raw_reaction) -> None:
 async def delete_item(reaction, user) -> None:
     """Deletes a item from the chat and database.
 
-    Args:
-        reaction: the reaction which was added to the item message
-        user: the user who added the reaction
-    """
+	Args:
+		reaction: the reaction which was added to the item message
+		user: the user who added the reaction
+	"""
     guild = reaction.message.guild
     guild_member = await guild.fetch_member(user.id)
 
@@ -237,10 +237,10 @@ async def delete_item(reaction, user) -> None:
 async def edit_item(reaction, user) -> None:
     """Edits an item.
 
-    Args:
-        reaction: the reaction which was added to the item message
-        user: the user who added the reaction
-    """
+	Args:
+		reaction: the reaction which was added to the item message
+		user: the user who added the reaction
+	"""
     guild = reaction.message.guild
     guild_member = await guild.fetch_member(user.id)
 
@@ -555,11 +555,11 @@ async def edit_item(reaction, user) -> None:
 async def cart_ticket(database_user, reaction, user) -> None:
     """Creates the cart ticket.
 
-    Args:
-        database_user: The database user
-        reaction: the reaction which was added to the cart message
-        user: the user who added the reaction
-    """
+	Args:
+		database_user: The database user
+		reaction: the reaction which was added to the cart message
+		user: the user who added the reaction
+	"""
     print(f"{user}")
     cart_cursor.execute(f"SELECT EXISTS (SELECT * FROM {database_user})")
     cart_exists = cart_cursor.fetchall()
@@ -627,10 +627,10 @@ async def cart_ticket(database_user, reaction, user) -> None:
 async def delete_cart(reaction, database_user) -> None:
     """Deletes the cart from the chat between the user and the bot.
 
-    Args:
-        reaction: the reaction which was added to the cart message
-        database_user: the database user which added the reaction
-    """
+	Args:
+		reaction: the reaction which was added to the cart message
+		database_user: the database user which added the reaction
+	"""
     cart_cursor.execute(f"DROP TABLE IF EXISTS `{database_user}`")
     cart_database.commit()
     await reaction.message.delete()
@@ -639,11 +639,11 @@ async def delete_cart(reaction, database_user) -> None:
 def cart(database_user, cart_add_count, reaction) -> None:
     """Creates or updates the cart database for the database user
 
-    Args:
-        database_user: the database user which added the reaction
-        cart_add_count int: a positive or negative number of items to add or remove from the cart
-        reaction: the reaction which was added to the item message
-    """
+	Args:
+		database_user: the database user which added the reaction
+		cart_add_count int: a positive or negative number of items to add or remove from the cart
+		reaction: the reaction which was added to the item message
+	"""
     cart_cursor.execute(
         "SELECT `id`, `quantity` FROM items WHERE name = %s AND channel_id = %s",
         (reaction.message.embeds[0].title, reaction.message.channel.id))
@@ -678,11 +678,11 @@ def cart(database_user, cart_add_count, reaction) -> None:
 async def cart_message(database_user, reaction, user) -> None:
     """Sends or updates the cart message in the chat between the user and the bot
 
-    Args:
-        database_user str: the database user which added the reaction
-        cart_add_count int: a positive or negative number of items to add or remove from the cart
-        reaction: the reaction which was added to the item message
-    """
+	Args:
+		database_user str: the database user which added the reaction
+		cart_add_count int: a positive or negative number of items to add or remove from the cart
+		reaction: the reaction which was added to the item message
+	"""
     cart_cursor.execute(f"SELECT EXISTS (SELECT * FROM {database_user})")
     cart_exists = cart_cursor.fetchall()
     if cart_exists == [(1, )]:
@@ -743,9 +743,9 @@ async def cart_message(database_user, reaction, user) -> None:
 async def delete_dm(user) -> None:
     """Deletes a direct message between the user and the bot
 
-    Args:
-        user: the user for which the dm should be deleted
-    """
+	Args:
+		user: the user for which the dm should be deleted
+	"""
     DMChannel = await user.create_dm()
     async for message in DMChannel.history(limit=1000):
         if message.author.id == client.user.id:
@@ -755,24 +755,24 @@ async def delete_dm(user) -> None:
 def is_cart(message) -> bool:
     """Checks if the message is a cart message
 
-    Args:
-        message: the message to check
+	Args:
+		message: the message to check
 
-    Returns:
-        bool: a boolean indicating if the message is a cart message
-    """
+	Returns:
+		bool: a boolean indicating if the message is a cart message
+	"""
     return "Your cart at " in message.embeds[0].title
 
 
 def is_order(message) -> bool:
     """Checks if the message is a order message
 
-    Args:
-        message: the message to check
+	Args:
+		message: the message to check
 
-    Returns:
-        bool: a boolean indicating if the message is a order message
-    """
+	Returns:
+		bool: a boolean indicating if the message is a order message
+	"""
     return "Your order at " in message.embeds[0].title
 
 
@@ -788,9 +788,9 @@ async def delete_messages(channel) -> None:
 async def help_command(message) -> None:
     """Generates the help message on the help command
 
-    Args:
-        message: the message which ran the help command
-    """
+	Args:
+		message: the message which ran the help command
+	"""
     embed = discord.Embed(title="Command Help",
                           description="",
                           color=discord.Colour.from_rgb(255, 0, 0))
@@ -822,9 +822,9 @@ async def help_command(message) -> None:
 async def addcategory_command(message) -> None:
     """Creates a category
 
-    Args:
-        message: the message which ran the command
-    """
+	Args:
+		message: the message which ran the command
+	"""
     guild = message.guild
     channel = message.channel
     author = message.author
@@ -858,9 +858,9 @@ async def addcategory_command(message) -> None:
 async def addchannel_command(message) -> None:
     """Creates a channel
 
-    Args:
-        message: the message which ran the command
-    """
+	Args:
+		message: the message which ran the command
+	"""
     guild = message.guild
     channel = message.channel
     author = message.author
@@ -905,12 +905,12 @@ async def addchannel_command(message) -> None:
 def is_url_image(image_url) -> bool:
     """Checks if a url does contain an image.
 
-    Args:
-        image_url str: the url which should be checked
+	Args:
+		image_url str: the url which should be checked
 
-    Returns:
-        bool: a boolean indicating if the url contains an image
-    """
+	Returns:
+		bool: a boolean indicating if the url contains an image
+	"""
     image_formats = ("image/jpg", "image/jpeg", "image/png", "image/gif")
     r = requests.head(image_url)
     if r.headers["content-type"] in image_formats:
@@ -921,9 +921,9 @@ def is_url_image(image_url) -> bool:
 async def additem_command(message) -> None:
     """Adds an item to the guild.
 
-    Args:
-        message: the message which ran the command
-    """
+	Args:
+		message: the message which ran the command
+	"""
     channel = message.channel
     author = message.author
 
@@ -1112,9 +1112,9 @@ async def additem_command(message) -> None:
 async def on_message(message) -> None:
     """Is ran when the bot receives a message
 
-    Args:
-        message: the message which got received
-    """
+	Args:
+		message: the message which got received
+	"""
     if message.author != client.user and message.guild is not None:
         role_names = [role.name for role in message.author.roles]
         if message.content.startswith("=setup"):
