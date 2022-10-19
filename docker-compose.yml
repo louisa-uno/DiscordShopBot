@@ -1,6 +1,6 @@
 version: '3.7'
 services:
-  skinbaron-bot:
+  discordshopbot:
     image: discordshopbot:latest
     deploy:
       replicas: 1
