@@ -1,4 +1,4 @@
-![discord-shop](https://i.imgur.com/FIlWlKH.png)
+![discord-shop](https://i.imgur.com/O02bv2t.png)
 
 # A user-friendly shop system for Discord
 
