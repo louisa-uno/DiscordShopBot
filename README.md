@@ -33,7 +33,7 @@ python discord-shop.py
 - ##### 4.1 Create the docker image
 ##### Navigate first into the discord-shop folder and then enter:
 ```bash
-docker build -t discord-shop .
+docker build -t discordshopbot .
 ```
 - ##### 4.2 Upload the docker image to your server or run it on your local machine
 
