@@ -69,7 +69,7 @@ async def start_setup(message) -> None:
 		if categoryExists is False:
 			await guild.create_category("orders")
 	embed = discord.Embed(title="Performed setup successfully",
-	                      description="",
+	                      description="Privacy Policy: https://discordshopbot.louis45.de/privacy-policy",
 	                      color=discord.Colour.from_rgb(255, 0, 0))
 	embed.add_field(
 	    name="Developer",
@@ -790,7 +790,7 @@ async def help_command(message) -> None:
 		message: the message which ran the help command
 	"""
 	embed = discord.Embed(title="Command Help",
-	                      description="",
+	                      description="Privacy Policy: https://discordshopbot.louis45.de/privacy-policy",
 	                      color=discord.Colour.from_rgb(255, 0, 0))
 
 	embed.add_field(name="Command Help", value="Usage: =help", inline=True)
