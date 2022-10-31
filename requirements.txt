@@ -1,6 +1,6 @@
 ###### Requirements ######
 numpy==1.22.0
-discord.py==1.5.1
+discord.py==2.0.1
 mysql-connector-python==8.0.22
 requests==2.25.0
 validators==0.18.1
