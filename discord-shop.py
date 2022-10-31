@@ -68,9 +68,11 @@ async def start_setup(message) -> None:
 				categoryExists = True
 		if categoryExists is False:
 			await guild.create_category("orders")
-	embed = discord.Embed(title="Performed setup successfully",
-	                      description="Privacy Policy: https://discordshopbot.louis45.de/privacy-policy",
-	                      color=discord.Colour.from_rgb(255, 0, 0))
+	embed = discord.Embed(
+	    title="Performed setup successfully",
+	    description=
+	    "Privacy Policy: https://discordshopbot.louis45.de/privacy-policy",
+	    color=discord.Colour.from_rgb(255, 0, 0))
 	embed.add_field(
 	    name="Developer",
 	    value=
@@ -86,7 +88,9 @@ async def on_ready() -> None:
 	print("Discord: Logged in as {0.user}".format(client))
 	print(f"Bot is used on {len(client.guilds)} Discord servers")
 	await client.change_presence(activity=discord.Activity(
-	    type=discord.ActivityType.playing, name="DiscordShopBot"))
+	    type=discord.ActivityType.playing,
+	    name="Privacy Policy: https://discordshopbot.louis45.de/privacy-policy"
+	))
 
 
 @client.event
@@ -694,9 +698,11 @@ async def cart_message(database_user, reaction, user) -> None:
 		temp_id = guild_ids.index(guild_msg_id)
 		guild_msg = client.guilds[temp_id]
 
-		embed = discord.Embed(title=f"Your cart at {guild_msg}",
-		                      description="",
-		                      color=discord.Colour.from_rgb(255, 0, 0))
+		embed = discord.Embed(
+		    title=f"Your cart at {guild_msg}",
+		    description=
+		    "Privacy Policy: https://discordshopbot.louis45.de/privacy-policy",
+		    color=discord.Colour.from_rgb(255, 0, 0))
 		productnames = ""
 		productquantity = ""
 		productprices = ""
@@ -789,9 +795,11 @@ async def help_command(message) -> None:
 	Args:
 		message: the message which ran the help command
 	"""
-	embed = discord.Embed(title="Command Help",
-	                      description="Privacy Policy: https://discordshopbot.louis45.de/privacy-policy",
-	                      color=discord.Colour.from_rgb(255, 0, 0))
+	embed = discord.Embed(
+	    title="Command Help",
+	    description=
+	    "Privacy Policy: https://discordshopbot.louis45.de/privacy-policy",
+	    color=discord.Colour.from_rgb(255, 0, 0))
 
 	embed.add_field(name="Command Help", value="Usage: =help", inline=True)
 	embed.add_field(name="Delete all messages in a channel",
