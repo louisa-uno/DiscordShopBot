@@ -16,7 +16,7 @@ with open("config.json") as f:
 class aclient(discord.Client):
 
 	def __init__(self):
-		super().__init__(intents=discord.Intents.all())
+		super().__init__(intents=discord.Intents(messages=True, guilds=True))
 		self.synced = False
 
 	async def on_ready(self):
