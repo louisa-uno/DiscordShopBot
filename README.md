@@ -42,7 +42,7 @@ docker build -t discordshopbot .
 #### You must have the "Seller" role on your server in order to use all features except the setup of the bot
 
 - #### =setup: Runs the automatic Setup
-- #### =help: Command Help
+- #### /sb_help: Command Help
 - #### =clear: Delete all messages in a channel
 - #### =addcategory: Create a shop category
 - #### =additem: Create a item
