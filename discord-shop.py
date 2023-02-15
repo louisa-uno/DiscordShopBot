@@ -811,6 +811,7 @@ async def delete_messages(channel) -> None:
 	else:
 		await channel.send(f'Deleted {message_count} messages')
 
+
 @tree.command(name="sb_help", description="Generates the help message")
 async def help_command(interaction) -> None:
 	"""Generates the help message on the help command
@@ -823,26 +824,29 @@ async def help_command(interaction) -> None:
 		    "Privacy Policy: https://discordshopbot.louis45.de/privacy-policy",
 		    color=discord.Colour.from_rgb(255, 0, 0))
 
-		embed.add_field(name="Command Help", value="Usage: /sb_help",
+		embed.add_field(name="Command Help",
+		                value="Usage: /sb_help",
 		                inline=True)
 		embed.add_field(name="Delete all messages in a channel",
 		                value="Usage: =clear",
 		                inline=True)
 		embed.add_field(name="Create a shop category",
-                  value="Usage: =addcategory",
+		                value="Usage: =addcategory",
 		                inline=True)
 		embed.add_field(name="Create a shop channel",
 		                value="Usage: =addchannel",
 		                inline=True)
-		embed.add_field(name="Create a item", value="Usage: =additem", inline=True)
+		embed.add_field(name="Create a item",
+		                value="Usage: =additem",
+		                inline=True)
 		embed.add_field(name="React with a ✏️ to a item to edit it.",
 		                value="Usage: Reaction ✏️",
 		                inline=True)
 		embed.add_field(
 		    name="Developer",
 		    value=
-	    "Louis_45#0553 | [GitHub](https://github.com/Luois45)\ndiscord-shop@louis45.de",
-	    inline=True)
+		    "Louis_45#0553 | [GitHub](https://github.com/Luois45)\ndiscord-shop@louis45.de",
+		    inline=True)
 
 	await interaction.channel.send(embed=embed)
 
@@ -969,10 +973,10 @@ async def additem_command(message) -> None:
 		mentioned_item_category = item_category_message.raw_channel_mentions
 		try:
 			mentioned_item_category_id = mentioned_item_category[0]
-				item_category_channel = await client.fetch_channel(
-				    mentioned_item_category_id)
-				break
-			except IndexError:
+			item_category_channel = await client.fetch_channel(
+			    mentioned_item_category_id)
+			break
+		except IndexError:
 			embed = discord.Embed(title="Please mention a valid category.",
 			                      description="",
 			                      color=discord.Colour.from_rgb(255, 0, 0))
@@ -986,12 +990,12 @@ async def additem_command(message) -> None:
 		item_name_message = await client.wait_for('message', check=check)
 		item_name = item_name_message.content
 
-			cart_cursor.execute(
-			    "SELECT * FROM items WHERE name = %s AND channel_id = %s",
-			    (item_name, mentioned_item_category_id))
-			if cart_cursor.fetchall() != []:
-				embed = discord.Embed(
-				    title="You can't have 2 items with the same name.",
+		cart_cursor.execute(
+		    "SELECT * FROM items WHERE name = %s AND channel_id = %s",
+		    (item_name, mentioned_item_category_id))
+		if cart_cursor.fetchall() != []:
+			embed = discord.Embed(
+			    title="You can't have 2 items with the same name.",
 			    description=
 			    "Just delete the old one or choose another name to proceed.",
 			    color=discord.Colour.from_rgb(255, 0, 0))
@@ -1019,19 +1023,19 @@ async def additem_command(message) -> None:
 			    title="The maximum length is 1024 characters.",
 			    description="",
 			    color=discord.Colour.from_rgb(255, 0, 0))
-			else:
-				break
+		else:
+			break
 
 		while True:
 			embed = discord.Embed(
 			    title="What should be the item image?",
-		    description=
-		    "Please enter public URL to the image or upload the image via Discord.\nValid Files are png, jpg, jpeg or gif. \n Enter a . for no image.",
-		    color=discord.Colour.from_rgb(255, 0, 0))
-		await message.channel.send(embed=embed)
-		item_image_message = await client.wait_for('message', check=check)
-		try:
-			item_image = item_image_message.attachments[0].url
+			    description=
+			    "Please enter public URL to the image or upload the image via Discord.\nValid Files are png, jpg, jpeg or gif. \n Enter a . for no image.",
+			    color=discord.Colour.from_rgb(255, 0, 0))
+			await message.channel.send(embed=embed)
+			item_image_message = await client.wait_for('message', check=check)
+			try:
+				item_image = item_image_message.attachments[0].url
 			except IndexError:
 				item_image = item_image_message.content
 			if str(item_image) == ".":
@@ -1039,9 +1043,9 @@ async def additem_command(message) -> None:
 			if validators.url(item_image) is True:
 				if len(item_image) > 2048:
 					embed = discord.Embed(
-				    title="The maximum length is 2048 characters.",
-				    description="",
-				    color=discord.Colour.from_rgb(255, 0, 0))
+					    title="The maximum length is 2048 characters.",
+					    description="",
+					    color=discord.Colour.from_rgb(255, 0, 0))
 				await message.channel.send(embed=embed)
 			else:
 				if is_url_image(item_image) is True:
@@ -1097,16 +1101,16 @@ async def additem_command(message) -> None:
 		item_quantity_database = item_quantity_message.content
 		try:
 			item_quantity_database = int(item_quantity_database)
-				if item_quantity_database > -1:
-					item_quantity = item_quantity_database
-					break
-				if item_quantity_database == -1:
-					item_quantity = "Unlimited"
-					break
+			if item_quantity_database > -1:
+				item_quantity = item_quantity_database
+				break
+			if item_quantity_database == -1:
+				item_quantity = "Unlimited"
+				break
 				embed = discord.Embed(
-			    title="The item quantity can't be below -1(Unlimited).",
-			    description="",
-			    color=discord.Colour.from_rgb(255, 0, 0))
+				    title="The item quantity can't be below -1(Unlimited).",
+				    description="",
+				    color=discord.Colour.from_rgb(255, 0, 0))
 			await message.channel.send(embed=embed)
 		except ValueError:
 			embed = discord.Embed(title="Please enter a valid quantity.",
