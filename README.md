@@ -8,13 +8,6 @@
 [![built with: Python3](https://camo.githubusercontent.com/0d9fbff04202da688cc79c5ffe984bd171edf453b2e41e5e56e55202dd5bdbb2/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f6275696c74253230776974682d507974686f6e332d7265642e737667)](https://www.python.org/)
 ![DiscordShopBot Actions](https://api.meercode.io/badge/Luois45/DiscordShopBot?type=ci-score&lastDay=14)
 
-## Add the bot to your server
-
-- #### 1. Click on the link and add the bot with admin permissions to your Discord server
-https://discord.com/api/oauth2/authorize?client_id=925539366540025917&permissions=8&scope=bot
-
-- #### 2. The instructions about the Usage are in the [Usage section](#usage)
-
 ## Install the bot yourself
 
 - #### 1. Install the requirements
